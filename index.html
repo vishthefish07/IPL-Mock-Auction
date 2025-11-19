@@ -262,6 +262,23 @@
   opacity: 0.9;
 }
 
+.analytics-btn {
+  background: linear-gradient(120deg, #38bdf8, #0ea5e9);
+  color: #020617;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 9999px;
+  padding: 0.55rem 1.5rem;
+  box-shadow: 0 10px 35px rgba(14, 165, 233, 0.35);
+}
+
+.analytics-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 .squad-team-block {
   margin-bottom: 0.75rem;
   border-radius: 0.5rem;
@@ -432,6 +449,51 @@
   opacity: 0.9;
 }
 
+.player-identity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.player-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.75rem;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+  background: #0f172a;
+  object-fit: cover;
+}
+
+.player-avatar-large {
+  width: 118px;
+  height: 118px;
+  border-radius: 1.5rem;
+  border: 3px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  background: #0f172a;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.player-identity-details {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 640px) {
+  .player-identity {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .player-avatar-large {
+    width: 96px;
+    height: 96px;
+  }
+}
+
 .player-meta-row {
   display: flex;
   gap: 0.75rem;
@@ -530,13 +592,129 @@
       cursor: pointer;
     }
 
-    .human-bid-button.disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      border-color: #4b5563;
-      background: #1f2937;
-      color: #9ca3af;
-    }
+.human-bid-button.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: #4b5563;
+  background: #1f2937;
+  color: #9ca3af;
+}
+
+.analytics-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+  z-index: 999;
+}
+
+.analytics-modal.hidden {
+  display: none;
+}
+
+.analytics-modal-panel {
+  width: min(960px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #0f172a;
+  border: 1px solid #1f2937;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 25px 55px rgba(0, 0, 0, 0.55);
+}
+
+.analytics-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.analytics-modal-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.analytics-modal-subtitle {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.analytics-close-btn {
+  background: transparent;
+  border: 1px solid #334155;
+  color: #e5e7eb;
+  border-radius: 9999px;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.analytics-section {
+  border: 1px solid #1f2a44;
+  border-radius: 0.9rem;
+  padding: 1rem 1.1rem;
+  background: #020617;
+  margin-bottom: 1rem;
+}
+
+.analytics-section h4 {
+  margin: 0 0 0.65rem;
+}
+
+.analytics-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.analytics-summary-card {
+  border: 1px solid #1f2a44;
+  border-radius: 0.75rem;
+  padding: 0.85rem;
+  background: #111b32;
+}
+
+.analytics-summary-label {
+  font-size: 0.8rem;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.analytics-summary-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+}
+
+.analytics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.analytics-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.analytics-row strong {
+  font-size: 1rem;
+}
+
+.analytics-empty {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
   </style>
 </head>
 
@@ -548,7 +726,7 @@
 
     <div class="row">
       <label>Host Name <input id="host-name" value="Vishnu" /></label>
-      <label>Bid Step <input id="bid-step" value="0.25" type="number" /></label>
+      <label>Bid Step <input id="bid-step" value="0.05" type="number" /></label>
       <label>Start Player <input id="start-player-index" value="1" type="number" /></label>
       <button id="start-btn">Start Auction</button>
     </div>
@@ -589,7 +767,10 @@
 
     <!-- Auction Info Tabs Row -->
     <div class="row" id="auction-info-tabs" style="margin-top:0.75rem; margin-bottom:0.25rem; justify-content:space-between; align-items:center; flex-wrap:wrap;">
-      <button id="players-board-btn" class="players-board-btn">📊 Open Player Board</button>
+      <div class="row" style="gap:0.5rem; flex-wrap:wrap;">
+        <button id="players-board-btn" class="players-board-btn">📊 Open Player Board</button>
+        <button id="analytics-btn" class="players-board-btn analytics-btn">📈 Continuous Auction Analytics</button>
+      </div>
       <div class="row" style="gap:0.35rem;">
         <button class="tab-btn active" data-info="sold">Sold</button>
         <button class="tab-btn" data-info="log">Log</button>
@@ -628,7 +809,20 @@
 
   </div>
 
-
+  <div id="analytics-modal" class="analytics-modal hidden">
+    <div class="analytics-modal-panel">
+      <div class="analytics-modal-header">
+        <div>
+          <div class="analytics-modal-title">Post Auction Analytics</div>
+          <div class="analytics-modal-subtitle">
+            Live summary of value picks, overpays, and bluffing drama.
+          </div>
+        </div>
+        <button id="analytics-close-btn" class="analytics-close-btn" aria-label="Close analytics">✕</button>
+      </div>
+      <div id="analytics-modal-body" class="analytics-modal-body"></div>
+    </div>
+  </div>
 
 <script src="generated_players_2026.js"></script>
 <script>
@@ -687,6 +881,104 @@
   // IPL 2026 DATA (purses + retained squads)
   // ----------------------------
 
+
+  function safeBtoa(str) {
+    try {
+      return btoa(str);
+    } catch (err) {
+      const binary = encodeURIComponent(str).replace(
+        /%([0-9A-F]{2})/g,
+        (_, p1) => String.fromCharCode(parseInt(p1, 16))
+      );
+      return btoa(binary);
+    }
+  }
+
+  function generatePlayerAvatar(playerName, options = {}) {
+    const {
+      size = 96,
+      fontSize = 32,
+      isOverseas = false,
+      rating = 7
+    } = options;
+
+    const initials = (playerName || "NA")
+      .split(" ")
+      .filter(Boolean)
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "NA";
+
+    const normalizedRating =
+      typeof rating === "number"
+        ? rating
+        : Math.max(0, parseFloat(rating) || 7);
+
+    const colorSchemes = [
+      { bg: "#e2e8f0", text: "#475569" }, // 0-5: Gray
+      { bg: "#dbeafe", text: "#1e40af" }, // 5-6: Blue
+      { bg: "#dcfce7", text: "#166534" }, // 6-7: Green
+      { bg: "#fef3c7", text: "#92400e" }, // 7-8: Yellow
+      { bg: "#fed7aa", text: "#9a3412" }, // 8-9: Orange
+      { bg: "#fecaca", text: "#991b1b" } // 9+: Red
+    ];
+
+    const schemeIndex = Math.min(
+      Math.floor(normalizedRating / 1.67),
+      colorSchemes.length - 1
+    );
+    const colors = colorSchemes[schemeIndex];
+
+    const svg = `
+      <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+        <rect width="${size}" height="${size}" fill="${colors.bg}" rx="${size * 0.2}"/>
+        ${
+          isOverseas
+            ? `<circle cx="${size * 0.85}" cy="${size * 0.15}" r="${
+                size * 0.12
+              }" fill="#f59e0b"/>`
+            : ""
+        }
+        <text
+          x="50%"
+          y="50%"
+          dominant-baseline="central"
+          text-anchor="middle"
+          font-family="system-ui, -apple-system, sans-serif"
+          font-size="${fontSize}"
+          font-weight="600"
+          fill="${colors.text}"
+        >
+          ${initials}
+        </text>
+      </svg>
+    `;
+
+    return `data:image/svg+xml;base64,${safeBtoa(svg)}`;
+  }
+
+  function getPlayerAvatarUrl(player, overrides = {}) {
+    if (!player) {
+      return generatePlayerAvatar("NA", overrides);
+    }
+
+    if (player.imageUrl) {
+      return player.imageUrl;
+    }
+
+    const rating =
+      typeof player.rating === "number"
+        ? player.rating
+        : Math.max(0, parseFloat(player.rating) || 7);
+
+    return generatePlayerAvatar(player.name, {
+      size: overrides.size ?? 118,
+      fontSize: overrides.fontSize ?? 42,
+      isOverseas: Boolean(player.isOverseas),
+      rating
+    });
+  }
 
   function stripNameTags(name) {
     return name.replace(/\s*\(.*?\)\s*/g, "").trim();
@@ -1070,6 +1362,12 @@ let soldIds = new Set();
 let unsoldIds = new Set();
 let playerStatus = new Map();
 let soldHistory = [];
+let bluffEventHistory = [];
+let analyticsAutoShown = false;
+let currentPlayerIndex = 0;
+let currentBid = 0;
+let currentBidTeamId = null;
+let bidStep = 0.05;
 let poolStateVersion = 0;
 let teamLandscapeVersion = 0;
 const SCARCITY_CACHE = new Map();
@@ -1081,6 +1379,83 @@ function invalidatePlayerPoolCaches() {
   SCARCITY_CACHE.clear();
   MARKET_HOTNESS_CACHE.clear();
   remainingOverseasCountCache.version = -1;
+}
+
+function recordBluffEvent(event) {
+  if (!event || !event.type) return;
+  event.price = Number(event.price || 0);
+  event.overpay = Number(event.overpay || 0);
+  event.timestamp = event.timestamp || Date.now();
+  bluffEventHistory.unshift(event);
+  if (bluffEventHistory.length > 50) {
+    bluffEventHistory.length = 50;
+  }
+}
+
+function formatCrores(amount) {
+  if (typeof amount !== "number" || Number.isNaN(amount)) {
+    return "₹0.00 cr";
+  }
+  return `₹${amount.toFixed(2)} cr`;
+}
+
+function normalizeBidAmount(value) {
+  if (typeof value !== "number" || Number.isNaN(value)) return 0;
+  return Math.round(value * 100) / 100;
+}
+
+function isBidAmountAligned(value) {
+  if (typeof value !== "number" || Number.isNaN(value)) return false;
+  const scaled = Math.round(value * 20);
+  return Math.abs(value * 20 - scaled) < 1e-6;
+}
+
+function getBidIncrementForAmount(amount) {
+  const safeAmount = typeof amount === "number" ? amount : 0;
+  if (safeAmount >= 5) return 0.25;
+  if (safeAmount >= 2) return 0.2;
+  if (safeAmount >= 1) return 0.1;
+  const baseStep =
+    typeof bidStep === "number" && bidStep > 0 ? bidStep : 0.05;
+  const normalizedBase =
+    Math.round(Math.max(0.05, baseStep) / 0.05) * 0.05;
+  return normalizedBase || 0.05;
+}
+
+function getNextBidAmount(currentAmount, player) {
+  if (!player) return 0;
+  if (!currentAmount || currentAmount <= 0) {
+    return normalizeBidAmount(player.basePrice);
+  }
+  const increment = getBidIncrementForAmount(currentAmount);
+  return normalizeBidAmount(currentAmount + increment);
+}
+
+function getTopBluffVictims(limit = 5) {
+  if (!bluffEventHistory.length) return [];
+  return bluffEventHistory
+    .filter((evt) => evt.type === "success")
+    .map((evt) => ({
+      bluffer: evt.blufferName,
+      victim: evt.targetName,
+      player: evt.playerName,
+      price: Number(evt.price.toFixed(2)),
+      overpay: Number(evt.overpay.toFixed(2))
+    }))
+    .slice(0, limit);
+}
+
+function getRecentBluffBackfires(limit = 5) {
+  if (!bluffEventHistory.length) return [];
+  return bluffEventHistory
+    .filter((evt) => evt.type === "backfire")
+    .map((evt) => ({
+      bluffer: evt.blufferName,
+      player: evt.playerName,
+      price: Number(evt.price.toFixed(2)),
+      note: evt.note || "Forced to buy their own target"
+    }))
+    .slice(0, limit);
 }
 function createInitialAuctionMemory() {
   return {
@@ -1529,6 +1904,10 @@ const infoTeamsEl = document.getElementById("info-teams");
 const infoLogEl = document.getElementById("info-log");
 const infoSoldEl = document.getElementById("info-sold");
 const soldListEl = document.getElementById("sold-list");
+const analyticsModalEl = document.getElementById("analytics-modal");
+const analyticsModalBodyEl = document.getElementById("analytics-modal-body");
+const analyticsBtn = document.getElementById("analytics-btn");
+const analyticsCloseBtn = document.getElementById("analytics-close-btn");
 
   // ----------------------------
   // LOBBY
@@ -1801,6 +2180,9 @@ function markHumanActivity() {
         humanBidPanelEl.classList.add("hidden");
       }
       updateManualBidButtons();
+      if (!analyticsAutoShown) {
+        openAnalyticsModal(true);
+      }
       return;
     }
 
@@ -1830,25 +2212,47 @@ function markHumanActivity() {
     const bidCardStyle = getBidCardStyle(currentBidTeamId);
     const bidBoxStyle = `background:${bidCardStyle.bg};color:${bidCardStyle.text};border:1px solid ${bidCardStyle.border};box-shadow:0 15px 35px ${bidCardStyle.shadow};`;
     const bidLabelStyle = `color:${bidCardStyle.subtext}`;
+    const normalizedRating =
+      typeof player.rating === "number"
+        ? player.rating
+        : Math.max(0, parseFloat(player.rating) || 7);
+    const avatarOverrides = { size: 140, fontSize: 52 };
+    const avatarUrl = getPlayerAvatarUrl(player, avatarOverrides);
+    const fallbackAvatarUrl = player.imageUrl
+      ? generatePlayerAvatar(player.name, {
+          size: avatarOverrides.size,
+          fontSize: avatarOverrides.fontSize,
+          isOverseas: Boolean(player.isOverseas),
+          rating: normalizedRating
+        })
+      : avatarUrl;
 
     playerPanelEl.innerHTML = `
       <div class="current-player-header">
-        <div>
-          <div class="current-player-title">
-            #${playerNumber} • ${player.name}
-          </div>
-          <div class="current-player-sub">
-            ${player.role} • Base: ₹${player.basePrice.toFixed(
-              2
-            )} cr • Rating: ${player.rating}/10
-          </div>
-          <div class="player-style-row">
-            <span class="player-style-pill">Batting: ${battingStyleDisplay}</span>
-            ${
-              showBowlingStyle
-                ? `<span class="player-style-pill">Bowling: ${rawBowlingDisplay}</span>`
-                : ""
-            }
+        <div class="player-identity">
+          <img
+            src="${avatarUrl}"
+            alt="${player.name}"
+            class="player-avatar player-avatar-large"
+            onerror="this.onerror=null;this.src='${fallbackAvatarUrl}'"
+          />
+          <div class="player-identity-details">
+            <div class="current-player-title">
+              #${playerNumber} • ${player.name}
+            </div>
+            <div class="current-player-sub">
+              ${player.role} • Base: ₹${player.basePrice.toFixed(
+                2
+              )} cr • Rating: ${player.rating}/10
+            </div>
+            <div class="player-style-row">
+              <span class="player-style-pill">Batting: ${battingStyleDisplay}</span>
+              ${
+                showBowlingStyle
+                  ? `<span class="player-style-pill">Bowling: ${rawBowlingDisplay}</span>`
+                  : ""
+              }
+            </div>
           </div>
         </div>
         <div class="current-player-right">
@@ -1882,10 +2286,7 @@ function markHumanActivity() {
   }
   function computeNextBidForDisplay(player) {
     if (!player) return 0;
-    if (currentBidTeamId == null || currentBid <= 0) {
-      return player.basePrice;
-    }
-    return currentBid + bidStep;
+    return getNextBidAmount(currentBid, player);
   }
 
 function renderHumanBidPanel() {
@@ -2835,6 +3236,219 @@ function refreshPlayersWindow() {
   renderPlayersWindow();
 }
 
+function buildAnalyticsListHtml(items, emptyText, renderRow) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return `<div class="analytics-empty">${emptyText}</div>`;
+  }
+  return `<div class="analytics-list">
+    ${items.map((item, idx) => renderRow(item, idx)).join("")}
+  </div>`;
+}
+
+function renderAnalyticsModalContent() {
+  if (!analyticsModalBodyEl) return;
+  const report = generateAuctionReport({ limit: 5 });
+  const victims = getTopBluffVictims(5);
+  const backfires = getRecentBluffBackfires(5);
+  const bluffLeaderboard = (report.bluffSuccess || []).filter(
+    (row) => row.attempts > 0
+  );
+  const bestValue = report.bestValue?.[0] || null;
+  const topVictim = victims[0] || null;
+  const bluffLeader = bluffLeaderboard[0] || null;
+
+  const summaryCards = [
+    {
+      label: "Players Sold",
+      value: soldHistory.length || 0,
+      subtext:
+        soldHistory.length > 0
+          ? `Latest: ${
+              soldHistory[0]?.playerName || "—"
+            }`
+          : "No completed sales yet"
+    },
+    {
+      label: "Best Value Buy",
+      value: bestValue ? bestValue.player : "—",
+      subtext: bestValue
+        ? `${bestValue.team} • ${formatCrores(
+            bestValue.price
+          )} • Value ${Number(bestValue.valueScore).toFixed(2)}`
+        : "Waiting for a bargain"
+    },
+    {
+      label: "Bluff Victim",
+      value: topVictim ? topVictim.victim : "—",
+      subtext: topVictim
+        ? `${topVictim.bluffer} sold ${topVictim.player} (+${formatCrores(
+            topVictim.overpay
+          )})`
+        : "No successful bluffs yet"
+    },
+    {
+      label: "Bluff Masters",
+      value: bluffLeader ? bluffLeader.teamName : "—",
+      subtext: bluffLeader
+        ? `${bluffLeader.successRate}% success (${bluffLeader.successes}/${bluffLeader.attempts})`
+        : "No bluff attempts logged"
+    }
+  ];
+
+  const valueHtml = buildAnalyticsListHtml(
+    report.bestValue || [],
+    "No standout value picks yet.",
+    (item, idx) => `
+      <div class="analytics-row">
+        <div>
+          <strong>#${idx + 1} ${item.player}</strong>
+          <div class="small-text">${item.team} • ${formatCrores(item.price)}</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="small-text">Value Score</div>
+          <strong>${Number(item.valueScore).toFixed(2)}</strong>
+        </div>
+      </div>
+    `
+  );
+
+  const overpayHtml = buildAnalyticsListHtml(
+    report.overpays || [],
+    "No one has overpaid… yet.",
+    (item, idx) => `
+      <div class="analytics-row">
+        <div>
+          <strong>#${idx + 1} ${item.player}</strong>
+          <div class="small-text">${item.team} • ${formatCrores(item.price)}</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="small-text">Spend vs value</div>
+          <strong>${Number(item.multiple).toFixed(2)}×</strong>
+        </div>
+      </div>
+    `
+  );
+
+  const victimsHtml = buildAnalyticsListHtml(
+    victims,
+    "No bluffs have landed yet.",
+    (item) => `
+      <div class="analytics-row">
+        <div>
+          <strong>${item.victim}</strong>
+          <div class="small-text">Bought ${item.player} from ${item.bluffer}</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="small-text">Overpay</div>
+          <strong>${formatCrores(item.overpay)}</strong>
+        </div>
+      </div>
+    `
+  );
+
+  const backfireHtml = buildAnalyticsListHtml(
+    backfires,
+    "No bluffs have backfired.",
+    (item) => `
+      <div class="analytics-row">
+        <div>
+          <strong>${item.bluffer}</strong>
+          <div class="small-text">Stuck with ${item.player}</div>
+        </div>
+        <div class="small-text" style="text-align:right;">${item.note || ""}</div>
+      </div>
+    `
+  );
+
+  const teamGradesHtml = buildAnalyticsListHtml(
+    report.teamGrades || [],
+    "Teams will be graded once the auction progresses.",
+    (item) => `
+      <div class="analytics-row">
+        <div>
+          <strong>${item.teamName}</strong>
+          <div class="small-text">Squad ${item.squadSize} • Coverage ${item.coverage}%</div>
+        </div>
+        <span class="badge">Grade ${item.grade}</span>
+      </div>
+    `
+  );
+
+  const bluffLeaderboardHtml = buildAnalyticsListHtml(
+    bluffLeaderboard,
+    "No bluff attempts recorded yet.",
+    (item) => `
+      <div class="analytics-row">
+        <div>
+          <strong>${item.teamName}</strong>
+          <div class="small-text">${item.successes}/${item.attempts} successful</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="small-text">Success Rate</div>
+          <strong>${item.successRate}%</strong>
+        </div>
+      </div>
+    `
+  );
+
+  analyticsModalBodyEl.innerHTML = `
+    <div class="analytics-summary-grid">
+      ${summaryCards
+        .map(
+          (card) => `
+        <div class="analytics-summary-card">
+          <div class="analytics-summary-label">${card.label}</div>
+          <div class="analytics-summary-value">${card.value}</div>
+          <div class="small-text">${card.subtext || ""}</div>
+        </div>
+      `
+        )
+        .join("")}
+    </div>
+    <div class="analytics-section">
+      <h4>Top Value Buys</h4>
+      ${valueHtml}
+    </div>
+    <div class="analytics-section">
+      <h4>Biggest Overpays</h4>
+      ${overpayHtml}
+    </div>
+    <div class="analytics-section">
+      <h4>Bluff Watch</h4>
+      <div class="row" style="gap:1rem; flex-wrap:wrap;">
+        <div style="flex:1 1 280px;">
+          <h5 style="margin:0 0 0.4rem;">Victims</h5>
+          ${victimsHtml}
+        </div>
+        <div style="flex:1 1 280px;">
+          <h5 style="margin:0 0 0.4rem;">Backfires</h5>
+          ${backfireHtml}
+        </div>
+      </div>
+    </div>
+    <div class="analytics-section">
+      <h4>Team Grades</h4>
+      ${teamGradesHtml}
+    </div>
+    <div class="analytics-section">
+      <h4>Bluff Leaderboard</h4>
+      ${bluffLeaderboardHtml}
+    </div>
+  `;
+}
+
+function openAnalyticsModal(auto = false) {
+  if (!analyticsModalEl) return;
+  renderAnalyticsModalContent();
+  analyticsModalEl.classList.remove("hidden");
+  if (auto) analyticsAutoShown = true;
+}
+
+function closeAnalyticsModal() {
+  if (!analyticsModalEl) return;
+  analyticsModalEl.classList.add("hidden");
+}
+
 function renderTeamsList() {
   // keep old callers working
   renderTeamsSummary();
@@ -3020,6 +3634,140 @@ function renderTeamsList() {
 
     // keep external players board synced with any status changes
     refreshPlayersWindow();
+  }
+
+  function resolvePlayerForReport(entry) {
+    if (!entry) return null;
+    const existing = PLAYERS_2026.find((p) => p.id === entry.playerId);
+    if (existing) return existing;
+    return {
+      id: entry.playerId,
+      name: entry.playerName,
+      role: "All-rounder",
+      bracket: "batter",
+      basePrice: entry.price || 0,
+      rating: 6.5,
+      isOverseas: false
+    };
+  }
+
+  function estimateUtilityForTeam(team, player) {
+    if (!team || !player) return player?.rating || 6.5;
+    const fitInfo = evaluatePlayerFit(team, player, team.blueprint);
+    return computePlayerUtility(team, player, fitInfo);
+  }
+
+  function findBestValuePicks(limit = 5) {
+    if (!soldHistory || soldHistory.length === 0) return [];
+    return soldHistory
+      .map((sale) => {
+        const team = getTeamById(sale.teamId);
+        const player = resolvePlayerForReport(sale);
+        if (!player || !sale.price || sale.price <= 0) return null;
+        const utility = estimateUtilityForTeam(team, player);
+        const valueScore = utility / Math.max(0.1, sale.price);
+        return {
+          player: player.name,
+          team: sale.teamName,
+          price: Number(sale.price.toFixed ? sale.price.toFixed(2) : sale.price),
+          utility: Number(utility.toFixed(2)),
+          valueScore: Number(valueScore.toFixed(2))
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.valueScore - a.valueScore)
+      .slice(0, limit);
+  }
+
+  function findOverpaidPlayers(limit = 5) {
+    if (!soldHistory || soldHistory.length === 0) return [];
+    return soldHistory
+      .map((sale) => {
+        const team = getTeamById(sale.teamId);
+        const player = resolvePlayerForReport(sale);
+        if (!player || !sale.price || sale.price <= 0) return null;
+        const utility = estimateUtilityForTeam(team, player);
+        if (sale.price <= utility * 2) return null;
+        const overpayMultiple = sale.price / Math.max(0.01, utility);
+        return {
+          player: player.name,
+          team: sale.teamName,
+          price: Number(sale.price.toFixed ? sale.price.toFixed(2) : sale.price),
+          utility: Number(utility.toFixed(2)),
+          multiple: Number(overpayMultiple.toFixed(2))
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.multiple - a.multiple)
+      .slice(0, limit);
+  }
+
+  function gradeSquadCompleteness() {
+    if (!Array.isArray(teamsState) || teamsState.length === 0) return [];
+    return teamsState
+      .map((team) => {
+        const counts = computeRoleCounts(team);
+        let roleScore = 0;
+        let tracked = 0;
+        Object.entries(TARGET_COMPOSITION).forEach(([role, target]) => {
+          if (!target) return;
+          const have = counts[role] || 0;
+          roleScore += Math.min(1, have / target);
+          tracked += 1;
+        });
+        const coverage = tracked ? roleScore / tracked : 0;
+        const sizeScore = Math.min(
+          1,
+          (team.squad?.length || 0) / Math.max(1, MIN_SQUAD_SIZE)
+        );
+        const score = coverage * 0.7 + sizeScore * 0.3;
+        let grade = "C";
+        if (score >= 0.9) grade = "A";
+        else if (score >= 0.75) grade = "B";
+        else if (score >= 0.6) grade = "C";
+        else if (score >= 0.45) grade = "D";
+        else grade = "F";
+        return {
+          teamId: team.id,
+          teamName: team.name,
+          coverage: Number((coverage * 100).toFixed(1)),
+          squadSize: team.squad?.length || 0,
+          grade
+        };
+      })
+      .sort((a, b) => a.teamName.localeCompare(b.teamName));
+  }
+
+  function calculateBluffStats() {
+    if (!Array.isArray(teamsState)) return [];
+    return teamsState
+      .map((team) => {
+        const memory = ensureAuctionMemory(team);
+        const attempts = memory.bluffStats?.attempts || 0;
+        const backfires = memory.bluffStats?.backfires || 0;
+        const successes = Math.max(0, attempts - backfires);
+        const successRate = attempts ? successes / attempts : 0;
+        return {
+          teamId: team.id,
+          teamName: team.name,
+          attempts,
+          successes,
+          backfires,
+          successRate: Number((successRate * 100).toFixed(1))
+        };
+      })
+      .sort((a, b) => b.successRate - a.successRate);
+  }
+
+  function generateAuctionReport(options = {}) {
+    const limit = options.limit ?? 5;
+    return {
+      generatedAt: new Date().toISOString(),
+      bestValue: findBestValuePicks(limit),
+      overpays: findOverpaidPlayers(limit),
+      teamGrades: gradeSquadCompleteness(),
+      bluffSuccess: calculateBluffStats()
+    };
   }
 
   // ----------------------------
@@ -4519,9 +5267,21 @@ function updateAuctionMemoryOnSale(winner, player, price) {
       if (selfWon) {
         stats.backfires = (stats.backfires || 0) + 1;
         pushLog(`💸 ${team.name}'s bluff backfired – stuck with ${player.name}!`);
+        recordBluffEvent({
+          type: "backfire",
+          blufferId: team.id,
+          blufferName: team.name,
+          targetId: winner.id,
+          targetName: winner.name,
+          playerName: player.name,
+          price,
+          overpay: 0,
+          note: "Bluff backfired – had to buy the player"
+        });
       } else if (winnerWasTarget) {
         stats.successes = (stats.successes || 0) + 1;
-        const overpay = price - player.basePrice;
+        const basePrice = typeof player.basePrice === "number" ? player.basePrice : 0;
+        const overpay = price - basePrice;
         if (overpay > 2) {
           pushLog(
             `🎭 ${team.name}'s bluff worked – ${winner.name} overpaid by ₹${overpay.toFixed(
@@ -4530,6 +5290,17 @@ function updateAuctionMemoryOnSale(winner, player, price) {
           );
         }
         adjustRivalryHeat(team, winner.id, -0.15);
+        recordBluffEvent({
+          type: "success",
+          blufferId: team.id,
+          blufferName: team.name,
+          targetId: winner.id,
+          targetName: winner.name,
+          playerName: player.name,
+          price,
+          overpay: Math.max(0, overpay),
+          note: "Bluff succeeded"
+        });
       }
     }
     memory.activeBluff = null;
@@ -4688,11 +5459,14 @@ function evaluateBluffOpportunity(team, player, nextBid, utility) {
 
   let cap = leaderMax * 0.7;
   cap *= 1 + rivalryHeat * 0.15;
+  const stepBaseline =
+    currentBid > 0 ? currentBid : player.basePrice;
+  const incrementUnit = getBidIncrementForAmount(stepBaseline);
   if (Math.random() < 0.15) {
-    cap += bidStep * randomInt(1, 2);
+    cap += incrementUnit * randomInt(1, 2);
   }
   cap = Math.min(cap, team.purse * 0.3);
-  if (cap < nextBid + bidStep * 2) return null;
+  if (cap < nextBid + incrementUnit * 2) return null;
 
   return {
     cap,
@@ -5833,8 +6607,7 @@ function aiTick() {
 
     if (eligibleAI.length === 0) return;
 
-    const nextBid =
-      currentBid === 0 ? player.basePrice : currentBid + bidStep;
+    const nextBid = getNextBidAmount(currentBid, player);
 
     // collect all interested AI with their decisions
     const candidates = [];
@@ -6026,24 +6799,30 @@ function stopAuto() {
     return;
   }
 
+  const minAllowedBid = getNextBidAmount(currentBid, player);
   let newBid;
   if (customAmount != null) {
-    newBid = customAmount;
+    newBid = normalizeBidAmount(customAmount);
   } else {
-    newBid = currentBid === 0 ? player.basePrice : currentBid + bidStep;
+    newBid = minAllowedBid;
   }
 
-  if (newBid < player.basePrice) {
+  if (newBid < minAllowedBid - 1e-6) {
     alert(
-      `Bid must be at least base price of ₹${player.basePrice.toFixed(
+      `Bid must be at least ₹${minAllowedBid.toFixed(
         2
-      )} cr.`
+      )} cr per IPL increment rules.`
     );
     return;
   }
 
   if (newBid <= currentBid) {
     alert("Bid must be higher than current bid.");
+    return;
+  }
+
+  if (!isBidAmountAligned(newBid)) {
+    alert("Bid must align with ₹5L/₹10L/₹20L/₹25L increments.");
     return;
   }
 
@@ -6568,13 +7347,18 @@ function getMaxPursePercent(team, stage, fitInfo, memory) {
       alert("Bid step must be a positive number.");
       return;
     }
-    bidStep = rawStep;
+    const normalizedStep =
+      Math.round(Math.max(0.05, rawStep) / 0.05) * 0.05;
+    bidStep = normalizedStep;
+    bidStepInput.value = normalizedStep.toFixed(2);
 
     auctionPlayers = buildAuctionOrder();
     unsoldPool = [];
     soldIds = new Set();
     unsoldIds = new Set();
     soldHistory = [];
+    bluffEventHistory = [];
+    analyticsAutoShown = false;
     stage = "main";
     resetPlayerStatuses();
     poolStateVersion = 0;
@@ -6599,6 +7383,9 @@ function getMaxPursePercent(team, stage, fitInfo, memory) {
     teamsState = selectedTeams;
     renderSoldList();
     logLines = [];
+    if (analyticsModalEl) {
+      analyticsModalEl.classList.add("hidden");
+    }
 
     linkSectionEl.classList.remove("hidden");
     shareLinkEl.textContent = window.location.href;
@@ -6642,12 +7429,11 @@ function getMaxPursePercent(team, stage, fitInfo, memory) {
     const player = getCurrentPlayer();
     if (!player) return;
 
-    const minBid =
-      currentBid === 0
-        ? player.basePrice
-        : Math.max(player.basePrice, currentBid + 0.01);
+    const minBid = getNextBidAmount(currentBid, player);
     const val = prompt(
-      `Enter custom bid amount in crore (>= ₹${minBid.toFixed(2)}):`,
+      `Enter custom bid amount in crore (>= ₹${minBid.toFixed(
+        2
+      )}, IPL increments only):`,
       minBid.toFixed(2)
     );
     if (!val) return;
@@ -6738,6 +7524,24 @@ if (playerViewTabsEl) {
 if (playersBoardBtn) {
   playersBoardBtn.addEventListener("click", () => {
     openPlayersWindow();
+  });
+}
+
+if (analyticsBtn) {
+  analyticsBtn.addEventListener("click", () => {
+    openAnalyticsModal();
+  });
+}
+
+if (analyticsCloseBtn) {
+  analyticsCloseBtn.addEventListener("click", () => closeAnalyticsModal());
+}
+
+if (analyticsModalEl) {
+  analyticsModalEl.addEventListener("click", (e) => {
+    if (e.target === analyticsModalEl) {
+      closeAnalyticsModal();
+    }
   });
 }
 
