@@ -1,0 +1,6784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>IPL 2026 Mock Auction</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    body {
+      margin: 0;
+      padding: 1.5rem;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI";
+      background: #020617;
+      color: #e5e7eb;
+    }
+
+    #lobby,
+    #auction {
+      max-width: 1320px;
+      margin: 0 auto;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+
+    .card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .mt-2 {
+      margin-top: 0.75rem;
+    }
+
+    .pill-row {
+      margin-top: 0.6rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .pill-row .tag {
+      margin-right: 0.25rem;
+    }
+
+    button {
+      padding: 0.45rem 1rem;
+      border-radius: 9999px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      background: #22c55e;
+      color: #020617;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    button.secondary {
+      background: #1e293b;
+      color: #e5e7eb;
+      border: 1px solid #334155;
+    }
+
+    input, select {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 0.5rem;
+      padding: 0.35rem 0.6rem;
+      color: #e5e7eb;
+      font-size: 0.9rem;
+      width: 150px;
+    }
+
+    /* Team Grid */
+    #team-grid {
+      margin-top: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    .team-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 0.75rem;
+      padding: 1.2rem;
+      transition: 0.25s;
+    }
+
+    .team-card:hover {
+      background: #2c3a52;
+    }
+
+    .team-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .team-card-main {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .team-role-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .team-role-row select,
+    .team-role-row input {
+      flex: 1 1 auto;
+    }
+
+
+    .team-pill {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.45rem;
+      border-radius: 0.4rem;
+      border: 1px solid;
+      margin-left: 0.5rem;
+    }
+
+    .tag {
+      padding: 0.25rem 0.6rem;
+      background: #1e293b;
+      color: #e5e7eb;
+      font-size: 0.75rem;
+      border-radius: 0.4rem;
+      border: 1px solid #334155;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      border-radius: 9999px;
+      border: 1px solid #334155;
+      padding: 0.05rem 0.4rem;
+      display: inline-block;
+    }
+
+    .highlight {
+      color: #22c55e;
+      font-weight: 700;
+    }
+
+    .small-text {
+      font-size: 0.75rem;
+      opacity: 0.85;
+    }
+
+    #team-list, #log, #section-list, #sold-list {
+      height: 200px;
+      overflow-y: auto;
+      border-radius: 0.5rem;
+      border: 1px solid #334155;
+      padding: 0.5rem;
+    }
+
+   #log,
+#section-list,
+#player-pool-list,
+#sold-list {
+  background: #020617;
+}
+
+.log-line {
+  font-size: 0.82rem;
+  margin-bottom: 0.25rem;
+  color: #cbd5e1;
+  padding: 2px 4px;
+  border-radius: 0.2rem;
+}
+
+/* soft zebra striping */
+#log .log-line:nth-child(odd),
+#section-list .log-line:nth-child(odd),
+#player-pool-list .log-line:nth-child(odd),
+#sold-list .log-line:nth-child(odd) {
+  background: #020617;
+}
+
+#log .log-line:nth-child(even),
+#section-list .log-line:nth-child(even),
+#player-pool-list .log-line:nth-child(even),
+#sold-list .log-line:nth-child(even) {
+  background: #0b1220;
+}
+
+    .chip {
+      padding: 0.2rem 0.6rem;
+      background: #1e293b;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      border: 1px solid #334155;
+    }
+
+    .chip:hover {
+      background: #334155;
+    }
+
+    .hidden {
+      display: none;
+    }
+    .tab-btn {
+  padding: 0.25rem 0.7rem;
+  border-radius: 9999px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #e5e7eb;
+  font-size: 0.75rem;
+  cursor: pointer;
+  margin-left: 0.25rem;
+}
+
+.tab-btn.active {
+  background: #22c55e;
+  color: #020617;
+  border-color: #16a34a;
+}
+
+.players-board-btn {
+  padding: 0.55rem 1.5rem;
+  border-radius: 9999px;
+  border: none;
+  background: linear-gradient(120deg, #22c55e, #16a34a);
+  color: #020617;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 35px rgba(34, 197, 94, 0.35);
+}
+
+.players-board-btn:hover {
+  opacity: 0.9;
+}
+
+.squad-team-block {
+  margin-bottom: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #334155;
+  background: #020617;
+  padding: 0.4rem 0.6rem;
+}
+
+.squad-team-block > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.squad-team-block > summary::-webkit-details-marker {
+  display: none;
+}
+
+.squad-team-meta {
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+.squad-role-block {
+  margin-top: 0.4rem;
+  padding-top: 0.3rem;
+  border-top: 1px dashed #334155;
+}
+
+.squad-role-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+  margin-bottom: 0.2rem;
+}
+
+.squad-player-line {
+  font-size: 0.78rem;
+  margin-left: 0.4rem;
+  margin-bottom: 0.15rem;
+}
+
+.squad-player-line span.badge {
+  font-size: 0.7rem;
+  opacity: 0.9;
+  border-radius: 9999px;
+  border: 1px solid #334155;
+  padding: 0.05rem 0.4rem;
+  margin-left: 0.3rem;
+}
+#team-squad-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 0.75rem;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+/* each team card scrolls inside if it has many players */
+.squad-team-block {
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+    /* prepare team-logo for real images later */
+    .team-logo {
+      width: 32px;
+      height: 32px;
+      display: inline-block;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      flex-shrink: 0;
+    }
+
+    /* wrapper around logo + team name so they align vertically */
+    .team-name-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* Header layout stays clean on one line */
+    .team-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    /* Team name text next to logo */
+    .team-name-text {
+      font-size: 0.8rem;
+      line-height: 1;
+      max-width: 420px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .team-purse {
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+
+    .current-player-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .current-player-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.35rem;
+    }
+
+    .auction-timer {
+      text-align: right;
+      min-width: 110px;
+    }
+
+    .auction-timer-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.7;
+    }
+
+    .auction-timer-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #f97316;
+      line-height: 1.1;
+    }
+
+.current-bid-box {
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  min-width: 210px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+}
+
+.current-bid-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+}
+
+.current-bid-value {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-top: 0.15rem;
+  line-height: 1.15;
+}
+
+.current-bid-footer {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.player-meta-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1.15rem;
+}
+
+.player-meta-pill {
+  background: #111b32;
+  border: 1px solid #1f2a44;
+  color: #e5e7eb;
+  padding: 0.4rem 0.95rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+}
+
+.player-meta-pill strong {
+  font-size: 0.95rem;
+  margin-left: 0.15rem;
+}
+
+.player-style-row {
+  margin-top: 0.35rem;
+  font-size: 0.95rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.player-style-pill {
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  border: 1px solid #334155;
+  background: #1b2337;
+  font-weight: 500;
+}
+
+    #human-bid-panel {
+      margin-top: 0.75rem;
+    }
+
+    .human-bid-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .human-bid-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.5rem;
+    }
+
+    .human-bid-team {
+      border-radius: 0.5rem;
+      border: 1px solid #334155;
+      padding: 0.5rem 0.6rem;
+      background: #020617;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .human-bid-header {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      justify-content: space-between;
+    }
+
+    .human-bid-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+      font-size: 0.75rem;
+    }
+
+    .human-bid-team-name {
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+
+    .human-bid-button {
+      margin-top: 0.35rem;
+      width: 100%;
+      padding: 0.4rem 0.6rem;
+      border-radius: 9999px;
+      border: 1px solid #16a34a;
+      background: #22c55e;
+      color: #020617;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .human-bid-button.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      border-color: #4b5563;
+      background: #1f2937;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOBBY SECTION -->
+  <div id="lobby" class="card">
+    <h2>IPL 2026 Mock Auction</h2>
+
+    <div class="row">
+      <label>Host Name <input id="host-name" value="Vishnu" /></label>
+      <label>Bid Step <input id="bid-step" value="0.25" type="number" /></label>
+      <label>Start Player <input id="start-player-index" value="1" type="number" /></label>
+      <button id="start-btn">Start Auction</button>
+    </div>
+    <div class="row small-text" style="margin-top:0.5rem;">
+      <label style="display:flex;align-items:center;gap:0.35rem;">
+        <input id="debug-toggle" type="checkbox" />
+        Enable utility debug logs
+      </label>
+    </div>
+
+    <!-- THIS IS WHERE TEAMS SHOW UP -->
+    <div id="team-grid"></div>
+  </div>
+
+  <!-- AUCTION SECTION -->
+  <div id="auction" class="hidden">
+
+    <div class="card">
+      <div id="player-panel"></div>
+
+      <div class="row" style="margin-top:1rem;">
+        <select id="control-team"></select>
+        <button id="btn-bid">Bid</button>
+        <button id="btn-custom-bid" class="secondary">Custom Bid</button>
+        <button id="btn-sell" class="secondary">Sell</button>
+        <button id="btn-skip" class="secondary">Unsold</button>
+        <button id="btn-next" class="secondary">Next Player</button>
+        <button id="btn-pause" class="secondary">⏸ Pause auto-sell</button>
+        <button id="btn-skip-section" class="secondary">Skip Section</button>
+      </div>
+
+      <div style="margin-top:1rem;" class="tag" id="players-left-chip">Players left: —</div>
+    </div>
+
+    <!-- Human bid panel: one big button per human team -->
+    <div id="human-bid-panel" class="card hidden"></div>
+    <div id="pause-team-bar" class="pause-team-bar hidden"></div>
+
+    <!-- Auction Info Tabs Row -->
+    <div class="row" id="auction-info-tabs" style="margin-top:0.75rem; margin-bottom:0.25rem; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+      <button id="players-board-btn" class="players-board-btn">📊 Open Player Board</button>
+      <div class="row" style="gap:0.35rem;">
+        <button class="tab-btn active" data-info="sold">Sold</button>
+        <button class="tab-btn" data-info="log">Log</button>
+      </div>
+    </div>
+
+   <div class="card hidden" id="info-teams" style="display:none;">
+      <div class="row" style="justify-content: space-between; align-items: center;">
+        <h4 style="margin: 0;">Teams</h4>
+        <div class="row" id="team-view-tabs">
+          <button class="tab-btn active" data-view="summary">Summary</button>
+          <button class="tab-btn" data-view="squads">Squads</button>
+        </div>
+      </div>
+      <div id="team-summary-view">
+        <div id="team-list"></div>
+      </div>
+      <div id="team-squad-view" class="hidden">
+        <div id="team-squad-list"></div>
+      </div>
+    </div>
+
+    <div class="card hidden" id="info-log">
+      <h4>Log</h4>
+      <div id="log"></div>
+    </div>
+    <div class="card" id="info-sold">
+      <h4>Sold Players</h4>
+      <div id="sold-list"></div>
+    </div>
+
+    <div id="link-section" class="card hidden">
+      <h4>Share Link</h4>
+      <div id="share-link" class="small-text"></div>
+    </div>
+
+  </div>
+
+
+
+<script src="generated_players_2026.js"></script>
+<script>
+  /*
+   * Areas for Improvement / Future Refactors
+   * ----------------------------------------
+   * 1. Code Organization (Medium Priority)
+   *    At ~3,400 lines, this would benefit from modularization:
+   *      // Suggested structure:
+   *      // - auctionEngine.js       (core logic: state machine, nextPlayer, sell/unsold handling)
+   *      // - aiDecisionSystem.js    (utility scores, pricing, bidding, bluff logic)
+   *      // - teamManagement.js      (squad updates, purse accounting, overseas caps, roster validation)
+   *      // - uiComponents.js        (all render* functions, DOM updates, pop-out windows)
+   *      // - dataModels.js          (player pool, team configs, constants like MIN_SQUAD_SIZE, AI_TUNING)
+   *
+   * 2. Performance Concerns (Low Priority)
+   *    - UTILITY_CACHE already helps with repeated utility evaluations.
+   *    - Consider memoizing computeRoleCounts() and computeNeedSignals()
+   *      per-team per-player-index, and invalidating only when a squad changes.
+   *    - The ~1.1s aiTick interval could miss very rapid human interactions; a
+   *      future refactor could:
+   *        • Separate a faster (e.g. 250–300ms) "input polling" / human activity layer
+   *          from a slower, heavier AI evaluation loop.
+   *        • Debounce expensive recomputations so the UI remains responsive.
+   *    - renderPlayerPoolList() currently rebuilds the entire list on every filter
+   *      change; could be optimized with:
+   *        • Pre-grouped players by bracket/OS, then filter client-side on that small structure.
+   *        • Simple diffing / reuse of DOM nodes for large pools.
+   *
+   * 3. Edge Cases (Medium Priority)
+   *    - Auction End Logic (Unsold Round):
+   *      // If the UNSOLD round finishes and one or more teams are still below
+   *      // MIN_SQUAD_SIZE, consider forcing auto-buys at base price to fill
+   *      // rosters. This will matter for long simulations where humans might
+   *      // be experimenting with extreme strategies.
+   *
+   *    - Bluff Cap Overflow:
+   *      // Wherever bluffCap is computed for AI bluff logic:
+   *      //   bluffCap = Math.min(bluffCap, team.purse * 0.9);
+   *      // This clamp should happen *before* any chaos/random adjustments so
+   *      // the AI never plans a bluff beyond 90% of its live purse.
+   *
+   *    - Overseas Lock vs. MIN_SQUAD_SIZE:
+   *      // If a team hits 8 overseas early, make sure there are enough Indian
+   *      // players in the remaining pool to get that team to MIN_SQUAD_SIZE.
+   *      // A stricter version could:
+   *      //   • In buildAuctionOrder(), validate that each team can still reach
+   *      //     MIN_SQUAD_SIZE given remaining Indians.
+   *      //   • Or in the unsold/cleanup phase, auto-assign leftover Indian
+   *      //     players at base price to any team that is still short.
+   *
+   * These are intentionally left as notes so future you (or anyone turning this
+   * into a multi-file project) has a clear roadmap for v2.
+   */
+  // ----------------------------
+  // IPL 2026 DATA (purses + retained squads)
+  // ----------------------------
+
+
+  function stripNameTags(name) {
+    return name.replace(/\s*\(.*?\)\s*/g, "").trim();
+  }
+
+  // Look up a player in the master pool by name (and, if available, 2025 team)
+  function findPlayerFromPoolByName(rawName, teamId) {
+    const clean = stripNameTags(rawName).toLowerCase();
+
+    // 1) Prefer match by cleaned name + team2025 / Team2025 if present
+    let match = PLAYERS_2026.find((p) => {
+      const poolName = stripNameTags(p.name).toLowerCase();
+      const t25 = (p.team2025 || p.Team2025 || p.team_2025 || "").toString().toUpperCase();
+      return poolName === clean && t25 === teamId.toUpperCase();
+    });
+
+    // 2) Fallback to name-only match
+    if (!match) {
+      match = PLAYERS_2026.find((p) => {
+        const poolName = stripNameTags(p.name).toLowerCase();
+        return poolName === clean;
+      });
+    }
+
+    return match || null;
+  }
+
+  // Build metadata for a retained player based on the canonical JS data
+  function buildRetainedPlayerMeta(rawName, teamId) {
+    const name = stripNameTags(rawName);
+    const fromPool = findPlayerFromPoolByName(name, teamId);
+
+    if (fromPool) {
+      const bracket = fromPool.bracket || fromPool.Bracket || "batter";
+      const role = fromPool.role || fromPool.Role || "Batter";
+      const rating =
+        typeof fromPool.rating === "number"
+          ? fromPool.rating
+          : typeof fromPool.Rating === "number"
+          ? fromPool.Rating
+          : 7;
+
+      const isOverseas =
+        typeof fromPool.isOverseas === "boolean"
+          ? fromPool.isOverseas
+          : (fromPool.Overseas || "").toString().toLowerCase() === "yes";
+
+      return {
+        role,
+        bracket,
+        battingHand: fromPool.battingHand || fromPool.BattingHand || "Right-hand bat",
+        bowlingStyle: fromPool.bowlingStyle || fromPool.BowlingStyle || null,
+        rating,
+        isOverseas
+      };
+    }
+
+    // Fallback if the retained name is not present in PLAYERS_2026 for some reason
+    return {
+      role: "Batter",
+      bracket: "batter",
+      battingHand: "Right-hand bat",
+      bowlingStyle: null,
+      rating: 7,
+      isOverseas: false
+    };
+  }
+
+  const IPL_TEAMS_2026 = [
+    {
+  id: "CSK",
+  name: "Chennai Super Kings",
+  purse: 43.4,
+  color: "#facc15",
+  logoUrl: "CSK.png",
+  retained: [
+        "Ruturaj Gaikwad (c)",
+        "Ayush Mhatre",
+        "MS Dhoni",
+        "Dewald Brevis",
+        "Urvil Patel",
+        "Shivam Dube",
+        "Jamie Overton",
+        "Ramakrishna Ghosh",
+        "Noor Ahmad",
+        "Khaleel Ahmed",
+        "Anshul Kamboj",
+        "Gurjapneet Singh",
+        "Shreyas Gopal",
+        "Mukesh Choudhary",
+        "Nathan Ellis",
+        "Sanju Samson (trade in)"
+      ]
+    },
+    {
+      id: "MI",
+      name: "Mumbai Indians",
+      purse: 2.75,
+      color: "#38bdf8",
+      logoUrl: "MI.png",
+      retained: [
+        "Hardik Pandya",
+        "Rohit Sharma",
+        "Suryakumar Yadav",
+        "Tilak Varma",
+        "Ryan Rickelton",
+        "Robin Minz",
+        "Mitchell Santner",
+        "Corbin Bosch",
+        "Naman Dhir",
+        "Jasprit Bumrah",
+        "Trent Boult",
+        "Allah Ghafanzar",
+        "Ashwani Kumar",
+        "Deepak Chahar",
+        "Will Jacks",
+        "Raghu Sharma",
+        "Raj Angad Bawa",
+        "Sherfane Rutherford (trade in)",
+        "Mayank Markande (trade in)",
+        "Shardul Thakur (trade in)"
+      ]
+    },
+    {
+      id: "KKR",
+      name: "Kolkata Knight Riders",
+      purse: 64.3,
+      color: "#a855f7",
+      logoUrl: "KKR.png",
+      retained: [
+        "Ajinkya Rahane",
+        "Sunil Narine",
+        "Rinku Singh",
+        "Angkrish Raghuvanshi",
+        "Manish Pandey",
+        "Varun Chakravarthy",
+        "Ramandeep Singh",
+        "Ankul Roy",
+        "Rovman Powell",
+        "Harshit Rana",
+        "Vaibhav Arora",
+        "Umran Malik"
+      ]
+    },
+    {
+      id: "RCB",
+      name: "Royal Challengers Bengaluru",
+      purse: 16.4,
+      color: "#ef4444",
+      logoUrl: "RCB.png",
+      retained: []
+    },
+    {
+      id: "PBKS",
+      name: "Punjab Kings",
+      purse: 11.5,
+      color: "#f87171",
+      logoUrl: "PBKS.png",
+      retained: [
+        "Prabhsimran Singh",
+        "Priyansh Arya",
+        "Shreyas Iyer",
+        "Shashank Singh",
+        "Nehal Wadhera",
+        "Marcus Stoinis",
+        "Azmatullah Omarzai",
+        "Marco Jansen",
+        "Harpreet Brar",
+        "Yuzvendra Chahal",
+        "Arshdeep Singh",
+        "Musheer Khan",
+        "Pyala Avinash",
+        "Harnoor Pannu",
+        "Suryansh Shedge",
+        "Mitchell Owen",
+        "Xavier Bartlett",
+        "Lockie Ferguson",
+        "Vyshak Vijaykumar",
+        "Yash Thakur",
+        "Vishnu Vinod"
+      ]
+    },
+    {
+      id: "GT",
+      name: "Gujarat Titans",
+      purse: 12.9,
+      color: "#22c55e",
+      logoUrl: "GT.png",
+      retained: [
+        "Shubman Gill (c)",
+        "Sai Sudharsan",
+        "Kumar Kushagra",
+        "Anuj Rawat",
+        "Jos Buttler",
+        "Nishant Sindhu",
+        "Washington Sundar",
+        "Arshad Khan",
+        "Shahrukh Khan",
+        "Rahul Tewatia",
+        "Kagiso Rabada",
+        "Mohammed Siraj",
+        "Prasidh Krishna",
+        "Ishant Sharma",
+        "Gurnoor Singh Brar",
+        "Rashid Khan",
+        "Manav Suthar",
+        "Sai Kishore",
+        "Jayant Yadav",
+        "Glenn Phillips"
+      ]
+    },
+    {
+      id: "RR",
+      name: "Rajasthan Royals",
+      purse: 16.05,
+      color: "#fb7185",
+      logoUrl: "RR.png",
+      retained: [
+        "Shubham Dubey",
+        "Vaibhav Suryavanshi",
+        "Lhuan-Dre Pretorius",
+        "Shimron Hetmyer",
+        "Yashasvi Jaiswal",
+        "Dhruv Jurel",
+        "Riyan Parag",
+        "Yudhvir Singh Charak",
+        "Jofra Archer",
+        "Tushar Deshpande",
+        "Kwena Maphaka",
+        "Nandre Burger",
+        "Ravindra Jadeja (trade in)",
+        "Sam Curran (trade in)"
+      ]
+    },
+    {
+      id: "SRH",
+      name: "Sunrisers Hyderabad",
+      purse: 25.5,
+      color: "#f97316",
+      logoUrl: "SRH.png",
+      retained: [
+        "Pat Cummins (c)",
+        "Travis Head",
+        "Abhishek Sharma",
+        "Aniket Verma",
+        "R. Smaran",
+        "Ishan Kishan",
+        "Heinrich Klaasen",
+        "Nitish Kumar Reddy",
+        "Harsh Dubey",
+        "Kamindu Mendis",
+        "Harshal Patel",
+        "Brydon Carse",
+        "Jaydev Unadkat",
+        "Eshan Malinga",
+        "Zeeshan Ansari"
+      ]
+    },
+    {
+      id: "LSG",
+      name: "Lucknow Super Giants",
+      purse: 22.95,
+      color: "#2dd4bf",
+      logoUrl: "LSG.png",
+      retained: [
+        "Abdul Samad",
+        "Ayush Badoni",
+        "Aiden Markram",
+        "Matthew Breetzke",
+        "Himmat Singh",
+        "Rishabh Pant (c)",
+        "Nicholas Pooran",
+        "Mitchell Marsh",
+        "Shahbaz Ahmed",
+        "Arshin Kulkarni",
+        "Mayank Yadav",
+        "Avesh Khan",
+        "Mohsin Khan",
+        "Manimaran Siddharth",
+        "Digvesh Rathi",
+        "Prince Yadav",
+        "Akash Singh",
+        "Mohammed Shami (trade in)",
+        "Arjun Tendulkar (trade in)"
+      ]
+    },
+    {
+      id: "DC",
+      name: "Delhi Capitals",
+      purse: 21.8,
+      color: "#3b82f6",
+      logoUrl: "DC.png",
+      retained: [
+        "Axar Patel (c)",
+        "KL Rahul",
+        "Abishek Porel",
+        "Tristan Stubbs",
+        "Karun Nair",
+        "Sameer Rizvi",
+        "Ashutosh Sharma",
+        "Vipraj Nigam",
+        "Madhav Tiwari",
+        "Tripurana Vijay",
+        "Ajay Mandal",
+        "Kuldeep Yadav",
+        "Mitchell Starc",
+        "T. Natarajan",
+        "Mukesh Kumar",
+        "Dushmantha Chameera",
+        "Nitish Rana (trade in)"
+      ]
+    }
+  ];
+
+// Automatically rebuild retained squads from the master 2026 players list
+// so we don’t have to maintain a separate manual list and so every team
+// (including RCB) gets the correct retained + traded‑in players.
+(function rebuildRetainedFromPlayerPool() {
+  if (!Array.isArray(PLAYERS_2026) || typeof IPL_RETENTION_FROM_SHEET !== 'object') return;
+
+  const teamMap = new Map();
+  IPL_TEAMS_2026.forEach((team) => {
+    team.retained = [];  // Clear hard-coded list
+    teamMap.set(team.id.toUpperCase(), team);
+  });
+
+  // ✅ Use IPL_RETENTION_FROM_SHEET instead of scanning PLAYERS_2026
+  Object.entries(IPL_RETENTION_FROM_SHEET).forEach(([teamId, retainedNames]) => {
+    const team = teamMap.get(teamId.toUpperCase());
+    if (!team) return;
+
+    retainedNames.forEach(playerName => {
+      // Clean the name (remove captain markers, etc.)
+      const cleanName = playerName.replace(/\s*\(.*?\)\s*/g, '').trim();
+      
+      // Find the player in PLAYERS_2026 to get their metadata
+      const playerData = PLAYERS_2026.find(p => {
+        const pName = p.name.replace(/\s*\(.*?\)\s*/g, '').trim();
+        return pName.toLowerCase() === cleanName.toLowerCase();
+      });
+
+      // If we found metadata, mark them as retained in that team
+      if (playerData) {
+        playerData.team2026 = teamId;  // Mark in master list
+      }
+      
+      // Add to team's retained list
+      team.retained.push(playerName);
+    });
+  });
+})();
+  const RETAINED_OVERSEAS_MAP = {};
+
+function refreshRetainedOverseasMap() {
+  Object.keys(RETAINED_OVERSEAS_MAP).forEach((key) => {
+    delete RETAINED_OVERSEAS_MAP[key];
+  });
+  IPL_TEAMS_2026.forEach((team) => {
+    const overseasNames = [];
+    (team.retained || []).forEach((name) => {
+      const meta = buildRetainedPlayerMeta(name, team.id);
+      if (meta.isOverseas) {
+        overseasNames.push(name);
+      }
+    });
+    RETAINED_OVERSEAS_MAP[team.id] = overseasNames;
+  });
+}
+refreshRetainedOverseasMap();
+
+// ----------------------------
+// GLOBAL AUCTION STATE
+// ----------------------------
+
+// player order + bracket ranges for the auction
+let auctionPlayers = [];
+let bracketRanges = [];
+
+// status tracking for each player
+let soldIds = new Set();
+let unsoldIds = new Set();
+let playerStatus = new Map();
+let soldHistory = [];
+let poolStateVersion = 0;
+let teamLandscapeVersion = 0;
+const SCARCITY_CACHE = new Map();
+const MARKET_HOTNESS_CACHE = new Map();
+let remainingOverseasCountCache = { version: -1, count: 0 };
+
+function invalidatePlayerPoolCaches() {
+  poolStateVersion += 1;
+  SCARCITY_CACHE.clear();
+  MARKET_HOTNESS_CACHE.clear();
+  remainingOverseasCountCache.version = -1;
+}
+function createInitialAuctionMemory() {
+  return {
+    missedTargets: [],
+    missedOpportunities: [],
+    regretByRole: {},
+    rivalSpending: {},
+    priceInflation: {
+      BAT: { totalBase: 0, totalPaid: 0, count: 0 },
+      WK: { totalBase: 0, totalPaid: 0, count: 0 },
+      AR: { totalBase: 0, totalPaid: 0, count: 0 },
+      BOWL: { totalBase: 0, totalPaid: 0, count: 0 }
+    },
+    bidHistory: [],
+    panicMode: false,
+    pendingDelay: 0,
+    pendingAction: null,
+    activeBluff: null,
+    bluffStats: { attempts: 0, backfires: 0, successes: 0, lastDecay: Date.now() },
+    lastRoleLosses: { BAT: 0, WK: 0, AR: 0, BOWL: 0 },
+    rivalryHeat: {},
+    recentRivalConflicts: [],
+    humanPauseSignals: {
+      playerId: null,
+      pausedAt: null,
+      pausingTeamId: null,
+      pauseDuration: 0,
+      stillPaused: false
+    },
+    humanBehaviorSignals: {
+      customBidAttempts: [],
+      quickBids: [],
+      pauseHistory: []
+    },
+    currentWar: {},
+    spendingMomentum: {
+      recentPurchases: [],
+      momentumMultiplier: 1.0,
+      lastUpdate: Date.now()
+    },
+    tiltLevel: 0,
+    consecutiveLosses: 0,
+    lastLossTimestamp: null,
+    fomoTriggers: [],
+    exhausted: false
+  };
+}
+
+const TEAM_INITIAL_PURSES = {};
+const MAX_BID_HISTORY = 10;
+const MAX_MISSED_TARGETS = 10;
+
+function isAuctionEligiblePlayer(player) {
+  if (!player) return false;
+  const base = Number(player.basePrice);
+  return Number.isFinite(base) && base > 0;
+}
+
+function ensureAuctionMemory(team) {
+  if (!team.auctionMemory) {
+    team.auctionMemory = createInitialAuctionMemory();
+  }
+  return team.auctionMemory;
+}
+
+function decayBluffStats(team) {
+  const memory = ensureAuctionMemory(team);
+  const bluffStats = memory.bluffStats || { attempts: 0, backfires: 0 };
+  const interval = 120000; // 2 minutes
+  const now = Date.now();
+  if (!bluffStats.lastDecay) {
+    bluffStats.lastDecay = now;
+    memory.bluffStats = bluffStats;
+    return;
+  }
+  if (now - bluffStats.lastDecay >= interval) {
+    bluffStats.backfires = Math.max(
+      0,
+      Math.floor(bluffStats.backfires * 0.8)
+    );
+    bluffStats.lastDecay = now;
+    memory.bluffStats = bluffStats;
+  }
+}
+
+function updateSpendingMomentum(team, price) {
+  const memory = ensureAuctionMemory(team);
+  memory.spendingMomentum = memory.spendingMomentum || {
+    recentPurchases: [],
+    momentumMultiplier: 1.0,
+    lastUpdate: Date.now()
+  };
+  const momentum = memory.spendingMomentum;
+  momentum.recentPurchases.push({
+    price,
+    timestamp: Date.now(),
+    playerId: getCurrentPlayer()?.id || null
+  });
+  if (momentum.recentPurchases.length > 5) {
+    momentum.recentPurchases.shift();
+  }
+  if (momentum.recentPurchases.length >= 2) {
+    const oldest = momentum.recentPurchases[0];
+    const newest =
+      momentum.recentPurchases[momentum.recentPurchases.length - 1];
+    const timeSpanMinutes = Math.max(
+      1,
+      (newest.timestamp - oldest.timestamp) / 60000
+    );
+    const totalSpent = momentum.recentPurchases.reduce(
+      (sum, entry) => sum + entry.price,
+      0
+    );
+    const spendRate = totalSpent / timeSpanMinutes;
+    if (spendRate > 10) {
+      momentum.momentumMultiplier = 0.85;
+    } else if (spendRate < 3) {
+      momentum.momentumMultiplier = 1.15;
+    } else {
+      momentum.momentumMultiplier = 1.0;
+    }
+  } else {
+    momentum.momentumMultiplier = 1.0;
+  }
+  momentum.lastUpdate = Date.now();
+}
+
+function recordBidHistory(team, entry) {
+  const memory = ensureAuctionMemory(team);
+  memory.bidHistory.unshift(entry);
+  if (memory.bidHistory.length > MAX_BID_HISTORY) {
+    memory.bidHistory.length = MAX_BID_HISTORY;
+  }
+}
+
+function recordMissedTarget(team, data) {
+  const memory = ensureAuctionMemory(team);
+  memory.missedTargets.unshift(data);
+  if (memory.missedTargets.length > MAX_MISSED_TARGETS) {
+    memory.missedTargets.length = MAX_MISSED_TARGETS;
+  }
+}
+
+function updatePriceInflationForAll(bucket, basePrice, salePrice) {
+  teamsState.forEach((team) => {
+    const memory = ensureAuctionMemory(team);
+    const bucketMeta = memory.priceInflation[bucket];
+    if (!bucketMeta) return;
+    bucketMeta.totalBase += basePrice;
+    bucketMeta.totalPaid += salePrice;
+    bucketMeta.count += 1;
+  });
+}
+
+function updateRivalSpendingForAll(winnerId, amount) {
+  teamsState.forEach((team) => {
+    const memory = ensureAuctionMemory(team);
+    memory.rivalSpending[winnerId] =
+      (memory.rivalSpending[winnerId] || 0) + amount;
+  });
+}
+
+function getInitialPurseForTeam(teamId) {
+  return TEAM_INITIAL_PURSES[teamId] || 0;
+}
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function scheduleBid(team, player, decision, nextBid) {
+  // 🔒 FINAL SAFETY CHECKS (lightweight, no extra delay)
+
+  // 1) Player must still be the same one we decided on
+  const livePlayer = getCurrentPlayer();
+  if (!livePlayer || livePlayer.id !== player.id) {
+    return false;
+  }
+
+  // 2) Bid must still be strictly above currentBid
+  if (nextBid <= currentBid) {
+    return false;
+  }
+
+  // 3) Team must still be able to afford this exact bid
+  if (team.purse < nextBid) {
+    console.warn(
+      `[SAFETY] Blocked AI bid: ${team.name} tried to bid ${nextBid.toFixed(
+        2
+      )} with purse ${team.purse.toFixed(2)}`
+    );
+    return false;
+  }
+
+  // 4) Re-check dynamic caps (overseas, squad size, etc.)
+  if (
+    !canTeamBidOn(team, player, nextBid, {
+      suppressAlerts: true,
+      suppressOverseasAlert: true
+    })
+  ) {
+    return false;
+  }
+
+  // If we reach here, the AI should bid *now* on this aiTick
+  return true;
+}
+
+  const MIN_SQUAD_SIZE = 18;
+  const MAX_SQUAD_SIZE = 25;
+
+// Track open squad windows per team
+const squadWindows = {};
+
+// Single pop-out window for players/brackets
+let playersWindow = null;
+
+let lastBidTimestamp = Date.now();
+let lastHumanInteraction = Date.now();
+let currentPlayerRevealAt = Date.now();
+let autoInterval = null;
+let isPaused = false;
+let autoResumeGraceUntil = 0;
+let aiTickRunning = false;
+let pauseHintTeamId = null;
+let activePauseTeamId = null;
+
+  // DOM
+  const lobbyEl = document.getElementById("lobby");
+  const teamGridEl = document.getElementById("team-grid");
+  const startBtn = document.getElementById("start-btn");
+  const hostNameInput = document.getElementById("host-name");
+  const bidStepInput = document.getElementById("bid-step");
+  const startPlayerInput = document.getElementById("start-player-index");
+  const auctionEl = document.getElementById("auction");
+  const playerPanelEl = document.getElementById("player-panel");
+  const teamListEl = document.getElementById("team-list");
+const logEl = document.getElementById("log");
+const teamSquadViewEl = document.getElementById("team-squad-view");
+const teamSquadListEl = document.getElementById("team-squad-list");
+const teamViewTabsEl = document.getElementById("team-view-tabs");
+  const controlTeamSelect = document.getElementById("control-team");
+  const btnBid = document.getElementById("btn-bid");
+  const btnCustomBid = document.getElementById("btn-custom-bid");
+  const btnSkip = document.getElementById("btn-skip");
+  const btnSell = document.getElementById("btn-sell");
+  const btnNext = document.getElementById("btn-next");
+  const btnPause = document.getElementById("btn-pause");
+  const btnSkipSection = document.getElementById("btn-skip-section");
+  const playersLeftChip = document.getElementById("players-left-chip");
+const humanBidPanelEl = document.getElementById("human-bid-panel");
+const pauseTeamBarEl = document.getElementById("pause-team-bar");
+const linkSectionEl = document.getElementById("link-section");
+const shareLinkEl = document.getElementById("share-link");
+const sectionSelect = document.getElementById("section-select");
+const sectionListEl = document.getElementById("section-list");
+const debugToggleEl = document.getElementById("debug-toggle");
+const playersBoardBtn = document.getElementById("players-board-btn");
+
+const playerViewTabsEl = document.getElementById("player-view-tabs");
+const playerSectionsViewEl = document.getElementById("player-sections-view");
+const playerPoolViewEl = document.getElementById("player-pool-view");
+const poolBracketFilterEl = document.getElementById("pool-bracket-filter");
+const poolOsFilterEl = document.getElementById("pool-os-filter");
+const poolStatusFilterEl = document.getElementById("pool-status-filter");
+const poolMinBaseEl = document.getElementById("pool-min-base");
+const poolMaxBaseEl = document.getElementById("pool-max-base");
+const playerPoolListEl = document.getElementById("player-pool-list");
+
+// Human bid panel: delegate click handling to team buttons
+
+if (humanBidPanelEl) {
+  humanBidPanelEl.addEventListener("click", (e) => {
+    const btn = e.target.closest(".human-bid-button");
+    if (!btn || btn.classList.contains("disabled")) return;
+
+    const teamId = btn.dataset.teamId;
+    if (!teamId) return;
+
+    const team = teamsState.find((t) => t.id === teamId);
+    if (!team) return;
+
+    markHumanActivity();
+    handleHumanBid(team);
+  });
+}
+
+if (controlTeamSelect) {
+  controlTeamSelect.addEventListener("change", () => {
+    if (controlTeamSelect.value) {
+      pauseHintTeamId = controlTeamSelect.value;
+      renderPauseTeamButtons();
+    }
+    updateManualBidButtons();
+  });
+}
+
+// Wrapper so each per-team button reuses the existing manual "Bid" logic.
+// It just selects the team in the main dropdown and triggers the normal
+// Bid button click, so all validation and AI/state updates stay the same.
+function handleHumanBid(team) {
+  if (!team) return;
+
+  // Select this team in the existing control dropdown (if present)
+  if (controlTeamSelect) {
+    controlTeamSelect.value = team.id;
+    updateManualBidButtons();
+  }
+
+  // Trigger the existing manual bid handler wired to the main Bid button.
+  // This way, all the old rules (purse checks, OS limits, etc.) still apply.
+  if (btnBid && typeof btnBid.click === "function") {
+    btnBid.click();
+  }
+}
+
+function getActiveHumanTeamIdForPause() {
+  if (controlTeamSelect && controlTeamSelect.value) {
+    return controlTeamSelect.value;
+  }
+  const toolbarBtn = document.querySelector(".active-human-pause-btn");
+  if (toolbarBtn && toolbarBtn.dataset.teamId) {
+    return toolbarBtn.dataset.teamId;
+  }
+  const fallback = teamsState?.find((t) => t.isHuman);
+  return fallback ? fallback.id : null;
+}
+
+function handleTeamPauseClick(teamId) {
+  if (!teamId) return;
+  pauseHintTeamId = teamId;
+  if (controlTeamSelect) {
+    controlTeamSelect.value = teamId;
+    updateManualBidButtons();
+  }
+  if (!isPaused) {
+    applyPauseState(true, teamId);
+  } else if (activePauseTeamId === teamId) {
+    applyPauseState(false, teamId);
+  } else {
+    transferPauseControl(teamId);
+  }
+}
+
+function applyPauseState(shouldPause, initiatingTeamId = null) {
+  const player = getCurrentPlayer();
+  const pausingTeamId = initiatingTeamId || getActiveHumanTeamIdForPause();
+  if (shouldPause) {
+    isPaused = true;
+    activePauseTeamId = pausingTeamId || null;
+    if (pausingTeamId) pauseHintTeamId = pausingTeamId;
+    notePauseStart(pausingTeamId, player);
+    btnPause.textContent = "▶ Resume auto-sell";
+  } else {
+    if (!isPaused) return;
+    isPaused = false;
+    activePauseTeamId = null;
+    teamsState.forEach((team) => {
+      const memory = ensureAuctionMemory(team);
+      if (memory.humanPauseSignals?.stillPaused) {
+        memory.humanPauseSignals.pauseDuration =
+          Date.now() - memory.humanPauseSignals.pausedAt;
+        memory.humanPauseSignals.stillPaused = false;
+      }
+    });
+    syncAuctionTimers(AI_TUNING.timers.pauseResumeBufferMs);
+    btnPause.textContent = "⏸ Pause auto-sell";
+  }
+  updateTimerDisplay();
+  renderPauseTeamButtons();
+}
+
+function transferPauseControl(teamId) {
+  activePauseTeamId = teamId;
+  pauseHintTeamId = teamId;
+  notePauseStart(teamId, getCurrentPlayer());
+  renderPauseTeamButtons();
+}
+
+function notePauseStart(pausingTeamId, player) {
+  if (!pausingTeamId) return;
+  const now = Date.now();
+  teamsState.forEach((team) => {
+    const memory = ensureAuctionMemory(team);
+    memory.humanPauseSignals = {
+      playerId: player ? player.id : null,
+      pausedAt: now,
+      pausingTeamId,
+      pauseDuration: 0,
+      stillPaused: true
+    };
+    const signals = memory.humanBehaviorSignals;
+    if (player && pausingTeamId) {
+      signals.pauseHistory.unshift({
+        playerId: player.id,
+        teamId: pausingTeamId,
+        timestamp: now
+      });
+      if (signals.pauseHistory.length > 10)
+        signals.pauseHistory.length = 10;
+    }
+  });
+}
+
+function resetPlayerStatuses() {
+  playerStatus.clear();
+  PLAYERS_2026.forEach((p) => playerStatus.set(p.id, "pending"));
+}
+
+function teamsHaveOpenSlots() {
+  if (!teamsState || teamsState.length === 0) return false;
+  return teamsState.some((team) => team.squad.length < MAX_SQUAD_SIZE);
+}
+
+function markRemainingPlayersAsUnsoldFinal() {
+  for (let i = currentPlayerIndex; i < auctionPlayers.length; i++) {
+    const player = auctionPlayers[i];
+    if (!player || soldIds.has(player.id) || unsoldIds.has(player.id)) continue;
+    unsoldIds.add(player.id);
+    playerStatus.set(player.id, "unsold_final");
+  }
+}
+
+function finalizeAuctionBecauseFullSquads() {
+  if (!teamsState || teamsState.length === 0) return false;
+  if (teamsHaveOpenSlots()) return false;
+  markRemainingPlayersAsUnsoldFinal();
+  unsoldPool = [];
+  invalidatePlayerPoolCaches();
+  pushLog("🏁 Auction ended because all squads have reached 25 players. Remaining players left UNSOLD.");
+  stopAI();
+  stopAuto();
+  currentPlayerIndex = auctionPlayers.length;
+  currentBid = 0;
+  currentBidTeamId = null;
+  renderPlayerPanel();
+  renderTeamsList();
+  renderSectionList();
+  renderPlayerPoolList();
+  return true;
+}
+
+
+const auctionInfoTabsEl = document.getElementById("auction-info-tabs");
+const infoTeamsEl = document.getElementById("info-teams");
+const infoLogEl = document.getElementById("info-log");
+const infoSoldEl = document.getElementById("info-sold");
+const soldListEl = document.getElementById("sold-list");
+
+  // ----------------------------
+  // LOBBY
+  // ----------------------------
+
+  function initLobbyTeams() {
+    teamGridEl.innerHTML = "";
+    IPL_TEAMS_2026.forEach((team) => {
+      const card = document.createElement("div");
+      card.className = "team-card";
+      card.dataset.teamId = team.id;
+
+      const headerRow = document.createElement("div");
+      headerRow.className = "team-card-header";
+
+      const left = document.createElement("div");
+      const nameEl = document.createElement("div");
+      nameEl.className = "team-name-wrapper";
+      nameEl.style.fontWeight = "600";
+      const logoStyle = team.logoUrl
+        ? `background-image:url('${team.logoUrl}');`
+        : `background-color:${team.color};`;
+      nameEl.innerHTML = `<span class="team-logo" style="${logoStyle}"></span><span class="team-name-text">${team.name}</span>`;
+
+      // LOBBY LOGO: wire up squad pop-out
+      // after setting nameEl.innerHTML (so .team-logo is present)
+      const logoSpan = nameEl.querySelector('.team-logo');
+      if (logoSpan) {
+        logoSpan.style.cursor = 'pointer';
+        logoSpan.title = 'View retained squad';
+        logoSpan.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openLobbySquadPreview(team);
+        });
+      }
+
+      left.appendChild(nameEl);
+
+      const purseEl = document.createElement("div");
+      purseEl.style.fontSize = "0.75rem";
+      purseEl.style.color = "#a1a1aa";
+      purseEl.style.marginLeft = "auto";
+      purseEl.innerHTML = `<span class="highlight">${team.purse.toFixed(2)} cr</span>`;
+
+      headerRow.appendChild(left);
+      headerRow.appendChild(purseEl);
+
+      const roleRow = document.createElement("div");
+      roleRow.className = "team-role-row";
+
+      const select = document.createElement("select");
+      select.innerHTML = `
+        <option value="human">Human</option>
+        <option value="ai" selected>Computer</option>
+      `;
+      select.style.maxWidth = "120px";
+
+      const nameInput = document.createElement("input");
+      nameInput.placeholder = "Player name (optional)";
+      nameInput.style.fontSize = "0.85rem";
+
+      roleRow.appendChild(select);
+      roleRow.appendChild(nameInput);
+
+      const pillRow = document.createElement("div");
+      pillRow.className = "pill-row small-text muted";
+      pillRow.innerHTML = `
+        <span class="tag">2026 purse</span>
+        <span class="tag">${team.retained.length} retained players</span>
+      `;
+
+      card.appendChild(headerRow);
+      card.appendChild(roleRow);
+      card.appendChild(pillRow);
+
+      teamGridEl.appendChild(card);
+
+      card._modeSelect = select;
+      card._nameInput = nameInput;
+    });
+  }
+
+  // ---- LOBBY SQUAD PREVIEW ----
+  function openLobbySquadPreview(teamBase) {
+    // Build squad array from retained list
+    const squad = teamBase.retained.map((rawName) => {
+      const name = stripNameTags(rawName);
+      const meta = buildRetainedPlayerMeta(rawName, teamBase.id);
+      const isOverseas = !!meta.isOverseas;
+      return {
+        name,
+        role: meta.role,
+        bracket: meta.bracket,
+        battingHand: meta.battingHand,
+        bowlingStyle: meta.bowlingStyle,
+        rating: meta.rating,
+        price: 0,
+        from: "retained",
+        isOverseas
+      };
+    });
+    const overseasBought = squad.filter((p) => p.isOverseas === true).length;
+    const previewTeam = {
+      id: teamBase.id,
+      name: teamBase.name,
+      purse: teamBase.purse,
+      color: teamBase.color,
+      logoUrl: teamBase.logoUrl,
+      squad,
+      overseasBought
+    };
+    openSquadWindow(previewTeam);
+  }
+
+  // ----------------------------
+  // LOG
+  // ----------------------------
+  // Global log buffer for the sidebar + sold list
+  let logLines = [];
+  function pushLog(msg) {
+    const timestamp = new Date().toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+    logLines.unshift(`[${timestamp}] ${msg}`);
+    if (logLines.length > 120) logLines.pop();
+    renderLog();
+  }
+
+function renderLog() {
+  logEl.innerHTML = "";
+  logLines.forEach((line) => {
+    const div = document.createElement("div");
+    div.className = "log-line";
+    div.textContent = line;
+    logEl.appendChild(div);
+  });
+}
+
+function renderSoldList() {
+  if (!soldListEl) return;
+  soldListEl.innerHTML = "";
+  if (soldHistory.length === 0) {
+    const div = document.createElement("div");
+    div.className = "log-line";
+    div.textContent = "No players have been sold yet.";
+    soldListEl.appendChild(div);
+    return;
+  }
+  soldHistory.forEach((entry) => {
+    const div = document.createElement("div");
+    div.className = "log-line";
+    const price = `₹${entry.price.toFixed(2)} cr`;
+    const time = new Date(entry.timestamp).toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+    div.innerHTML = `<strong>${entry.playerName}</strong> → ${entry.teamName} <span class="badge" style="margin-left:0.35rem;">${price}</span> <span class="small-text" style="margin-left:0.35rem;">${time}</span>`;
+    soldListEl.appendChild(div);
+  });
+}
+
+function markHumanActivity() {
+  lastHumanInteraction = Date.now();
+}
+
+  // ----------------------------
+  // AUCTION ORDER (BRACKETS)
+  // ----------------------------
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function buildAuctionOrder() {
+    bracketRanges = [];
+    const byBracket = {
+      marquee: [],
+      batter: [],
+      bowler: [],
+      allrounder: []
+    };
+
+    const pool = auctionPlayers.length ? auctionPlayers : PLAYERS_2026;
+
+  pool.forEach((p) => {
+    if (!isAuctionEligiblePlayer(p)) return;
+    if (byBracket[p.bracket]) byBracket[p.bracket].push(p);
+  });
+
+    const order = [];
+    const BRACKET_ORDER = ["marquee", "batter", "bowler", "allrounder"];
+
+    BRACKET_ORDER.forEach((br) => {
+      const group = byBracket[br];
+      if (!group || group.length === 0) return;
+      shuffle(group);
+      const startIndex = order.length;
+      order.push(...group);
+      const endIndex = order.length - 1;
+      bracketRanges.push({ bracket: br, start: startIndex, end: endIndex });
+    });
+
+    return order;
+  }
+
+  // ----------------------------
+  // RENDER HELPERS
+  // ----------------------------
+
+  function getCurrentPlayer() {
+    if (currentPlayerIndex < 0 || currentPlayerIndex >= auctionPlayers.length)
+      return null;
+    return auctionPlayers[currentPlayerIndex];
+  }
+
+  function sectionLabelForBracket(br) {
+    switch (br) {
+      case "marquee":
+        return "Marquee";
+      case "batter":
+        return "Batters";
+      case "bowler":
+        return "Bowlers";
+      case "allrounder":
+        return "All-rounders";
+      default:
+        return br;
+    }
+  }
+
+  function getCurrentSectionLabel() {
+    const player = getCurrentPlayer();
+    if (!player) return "Finished";
+    if (stage === "unsold") return "Unsold Round";
+    return sectionLabelForBracket(player.bracket);
+  }
+
+  function renderPlayerPanel() {
+    const player = getCurrentPlayer();
+    if (playersWindow && playersWindow.closed) {
+    playersWindow = null;
+  }
+
+    if (!player) {
+      playerPanelEl.innerHTML = `
+        <div class="current-player-header">
+          <div>
+            <div class="current-player-title">Auction Finished</div>
+            <div class="current-player-sub">
+              All players processed. Check squads & log on the right.
+            </div>
+          </div>
+        </div>
+      `;
+      btnBid.disabled = true;
+      btnCustomBid.disabled = true;
+      btnSkip.disabled = true;
+      btnSell.disabled = true;
+      btnNext.disabled = true;
+      btnPause.disabled = true;
+      btnSkipSection.disabled = true;
+      playersLeftChip.textContent = "Players left: 0";
+      if (humanBidPanelEl) {
+        humanBidPanelEl.innerHTML = "";
+        humanBidPanelEl.classList.add("hidden");
+      }
+      updateManualBidButtons();
+      return;
+    }
+
+    const playerNumber = currentPlayerIndex + 1;
+    const totalPlayers = auctionPlayers.length;
+    const leadingTeam =
+      currentBidTeamId != null
+        ? teamsState.find((t) => t.id === currentBidTeamId)?.name || "—"
+        : null;
+    const bidAmountDisplay =
+      currentBidTeamId == null
+        ? "—"
+        : `₹${currentBid.toFixed(2)} cr`;
+    const bidLeaderText =
+      currentBidTeamId == null
+        ? "Waiting for first bid"
+        : `Leading: ${leadingTeam}`;
+
+    const sectionLabel = getCurrentSectionLabel();
+    const battingStyleDisplay = getDisplayBattingStyle(player);
+    const rawBowlingDisplay = getDisplayBowlingStyle(player);
+    const showBowlingStyle =
+      shouldShowBowlingStyle(player) &&
+      rawBowlingDisplay &&
+      rawBowlingDisplay.toLowerCase() !== "none" &&
+      rawBowlingDisplay !== "—";
+    const bidCardStyle = getBidCardStyle(currentBidTeamId);
+    const bidBoxStyle = `background:${bidCardStyle.bg};color:${bidCardStyle.text};border:1px solid ${bidCardStyle.border};box-shadow:0 15px 35px ${bidCardStyle.shadow};`;
+    const bidLabelStyle = `color:${bidCardStyle.subtext}`;
+
+    playerPanelEl.innerHTML = `
+      <div class="current-player-header">
+        <div>
+          <div class="current-player-title">
+            #${playerNumber} • ${player.name}
+          </div>
+          <div class="current-player-sub">
+            ${player.role} • Base: ₹${player.basePrice.toFixed(
+              2
+            )} cr • Rating: ${player.rating}/10
+          </div>
+          <div class="player-style-row">
+            <span class="player-style-pill">Batting: ${battingStyleDisplay}</span>
+            ${
+              showBowlingStyle
+                ? `<span class="player-style-pill">Bowling: ${rawBowlingDisplay}</span>`
+                : ""
+            }
+          </div>
+        </div>
+        <div class="current-player-right">
+          <div class="current-bid-box" style="${bidBoxStyle}">
+            <div class="current-bid-label" style="${bidLabelStyle}">Current Bid</div>
+            <div class="current-bid-value">${bidAmountDisplay}</div>
+            <div class="current-bid-footer" style="${bidLabelStyle}">${bidLeaderText}</div>
+          </div>
+          <div id="auction-timer" class="auction-timer">
+            <div class="auction-timer-label">Timer</div>
+            <div class="auction-timer-value">--</div>
+          </div>
+          <div class="team-meta" style="display:flex; gap:0.4rem; flex-wrap:wrap; justify-content:flex-end;">
+            <span class="chip">Section: ${sectionLabel}</span>
+            <span class="chip">Auto: ${isPaused ? "Paused" : "Running"}</span>
+          </div>
+        </div>
+      </div>
+      <div class="player-meta-row">
+        <span class="player-meta-pill">Players in pool:<strong>${totalPlayers}</strong></span>
+        <span class="player-meta-pill">Player index:<strong>${playerNumber}/${totalPlayers}</strong></span>
+      </div>
+    `;
+
+    playersLeftChip.textContent = `Players left: ${
+      totalPlayers - playerNumber + 1
+    }`;
+    updateTimerDisplay();
+    renderHumanBidPanel();
+    updateManualBidButtons();
+  }
+  function computeNextBidForDisplay(player) {
+    if (!player) return 0;
+    if (currentBidTeamId == null || currentBid <= 0) {
+      return player.basePrice;
+    }
+    return currentBid + bidStep;
+  }
+
+function renderHumanBidPanel() {
+  if (!humanBidPanelEl) return;
+
+  const player = getCurrentPlayer();
+  if (!player) {
+    humanBidPanelEl.innerHTML = "";
+    humanBidPanelEl.classList.add("hidden");
+    return;
+  }
+
+  // Show all teams (human + AI)
+  const displayTeams = teamsState;
+  if (!displayTeams || displayTeams.length === 0) {
+    humanBidPanelEl.innerHTML = "";
+    humanBidPanelEl.classList.add("hidden");
+    return;
+  }
+
+  humanBidPanelEl.classList.remove("hidden");
+  humanBidPanelEl.innerHTML = `
+    <div class="human-bid-title">Teams</div>
+    <div class="human-bid-grid"></div>
+  `;
+  const grid = humanBidPanelEl.querySelector(".human-bid-grid");
+  if (!grid) return;
+
+  const nextBidBase = computeNextBidForDisplay(player);
+
+  displayTeams.forEach((team) => {
+    const card = document.createElement("div");
+    card.className = "human-bid-team";
+
+    const logoStyle = team.logoUrl
+      ? `background-image:url('${team.logoUrl}');`
+      : `background-color:${team.color};`;
+
+    const remainingSlots = MAX_SQUAD_SIZE - team.squad.length;
+    const remainingOS = 8 - team.overseasBought;
+
+    let bidAmount = nextBidBase;
+    if (bidAmount < player.basePrice) {
+      bidAmount = player.basePrice;
+    }
+
+    // 🔒 Only humans can actually bid. AI teams are always disabled.
+    let canBid = true;
+    if (!team.isHuman) {
+      canBid = false;
+    } else {
+      if (team.id === currentBidTeamId) canBid = false;
+      if (team.purse < bidAmount) canBid = false;
+      if (
+        typeof canTeamBidOn === "function" &&
+        !canTeamBidOn(team, player, bidAmount, {
+          suppressAlerts: true,
+          suppressOverseasAlert: true
+        })
+      ) {
+        canBid = false;
+      }
+    }
+
+    const buttonClasses = canBid
+      ? "human-bid-button"
+      : "human-bid-button disabled";
+
+    card.innerHTML = `
+      <div class="human-bid-header">
+        <span class="team-logo" style="${logoStyle}"></span>
+        <div class="human-bid-meta">
+          <div class="human-bid-team-name">${team.name}</div>
+          <div class="human-bid-team-sub small-text">
+            Purse: ₹${team.purse.toFixed(2)} cr • Slots: ${remainingSlots} • OS: ${team.overseasBought}/8
+          </div>
+        </div>
+      </div>
+      <button class="${buttonClasses}" data-team-id="${team.id}">
+        Bid for ${team.id}
+      </button>
+    `;
+
+    // 🧷 Logo click → open squad window
+    const logoEl = card.querySelector(".team-logo");
+    if (logoEl) {
+      logoEl.style.cursor = "pointer";
+      logoEl.title = "View squad";
+      logoEl.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openSquadWindow(team);
+      });
+    }
+
+    grid.appendChild(card);
+  });
+
+  updateManualBidButtons();
+}
+
+function renderPauseTeamButtons() {
+  if (!pauseTeamBarEl) return;
+  const humans = (teamsState || []).filter((t) => t.isHuman);
+  if (humans.length === 0) {
+    pauseTeamBarEl.innerHTML = "";
+    pauseTeamBarEl.classList.add("hidden");
+    return;
+  }
+  pauseTeamBarEl.classList.remove("hidden");
+  if (!pauseHintTeamId || !humans.some((t) => t.id === pauseHintTeamId)) {
+    pauseHintTeamId = humans[0].id;
+  }
+  pauseTeamBarEl.innerHTML = "";
+  const label = document.createElement("span");
+  label.className = "small-text";
+  label.style.marginRight = "0.5rem";
+  label.textContent = "Human pause controls:";
+  pauseTeamBarEl.appendChild(label);
+  humans.forEach((team) => {
+    const btn = document.createElement("button");
+    btn.className = "pause-team-btn";
+    if (team.id === pauseHintTeamId) btn.classList.add("active", "active-human-pause-btn");
+    if (isPaused && team.id === activePauseTeamId) {
+      btn.classList.add("resume");
+      btn.textContent = `Resume ${team.id}`;
+    } else {
+      btn.textContent = `Pause ${team.id}`;
+    }
+    btn.dataset.teamId = team.id;
+    btn.addEventListener("click", () => handleTeamPauseClick(team.id));
+    pauseTeamBarEl.appendChild(btn);
+  });
+}
+
+function updateManualBidButtons() {
+  if (!btnBid || !btnCustomBid) return;
+  const player = getCurrentPlayer();
+  const teamId = controlTeamSelect ? controlTeamSelect.value : null;
+  const team = teamId ? getTeamById(teamId) : null;
+  let disabled = false;
+  let reason = "";
+  if (!player || !team) {
+    disabled = true;
+  } else if (player.isOverseas && team.overseasBought >= 8) {
+    disabled = true;
+    reason = `${team.name} already has 8 overseas players.`;
+  }
+  btnBid.disabled = disabled;
+  btnCustomBid.disabled = disabled;
+  btnBid.classList.toggle("disabled", disabled);
+  btnCustomBid.classList.toggle("disabled", disabled);
+  if (disabled && reason) {
+    btnBid.title = reason;
+    btnCustomBid.title = reason;
+  } else {
+    btnBid.removeAttribute("title");
+    btnCustomBid.removeAttribute("title");
+  }
+}
+
+  function updateTimerDisplay() {
+  const timerEl = document.getElementById("auction-timer");
+  if (!timerEl) return;
+
+  const labelEl = timerEl.querySelector(".auction-timer-label");
+  const valueEl = timerEl.querySelector(".auction-timer-value");
+  if (!valueEl) return;
+
+  const player = getCurrentPlayer();
+  if (!player) {
+    if (labelEl) labelEl.textContent = "Timer";
+    valueEl.textContent = "--";
+    return;
+  }
+
+  // If paused: freeze the display and show PAUSED
+  if (isPaused) {
+    if (labelEl) labelEl.textContent = "Auto-sell";
+    valueEl.textContent = "PAUSED";
+    return;
+  }
+
+  // 45s if there is a current bid (auto-sell)
+  // 60s if there are no bids yet (auto-unsold)
+  const limit =
+    currentBidTeamId != null
+      ? AI_TUNING.timers.autoSellSeconds
+      : AI_TUNING.timers.autoUnsoldSeconds;
+
+  const now = Date.now();
+  const sinceBid = (now - lastBidTimestamp) / 1000; // seconds since last bid / resume
+  let remaining = Math.floor(limit - sinceBid);
+  if (remaining < 0) remaining = 0;
+
+  if (labelEl) {
+    labelEl.textContent =
+      currentBidTeamId != null ? "Auto-sell" : "Auto-unsold";
+  }
+
+  valueEl.textContent = `${remaining}s`;
+}
+
+
+
+  function showSquad(team) {
+    if (!team.squad || team.squad.length === 0) {
+      alert(`${team.name} squad is currently empty.`);
+      return;
+    }
+
+    // Bucket players by role using getRoleBucket
+    const buckets = {
+      BAT: [],
+      WK: [],
+      AR: [],
+      BOWL: [],
+      OTHER: []
+    };
+
+    team.squad.forEach((p) => {
+      const bucket = getRoleBucket(p.role, p.from);
+      if (!buckets[bucket]) {
+        buckets.OTHER.push(p);
+      } else {
+        buckets[bucket].push(p);
+      }
+    });
+
+    const bucketOrder = ["BAT", "WK", "AR", "BOWL", "OTHER"];
+    const bucketLabels = {
+      BAT: "Batters",
+      WK: "Wicket-keepers",
+      AR: "All-rounders",
+      BOWL: "Bowlers",
+      OTHER: "Other / Unknown role"
+    };
+
+    const lines = [];
+    lines.push(
+      `${team.name} squad (Total: ${team.squad.length}, Overseas bought: ${team.overseasBought}):`,
+      ""
+    );
+
+    bucketOrder.forEach((key) => {
+      const list = buckets[key];
+      if (!list || list.length === 0) return;
+
+      lines.push(`${bucketLabels[key]}:`);
+
+      list.forEach((p) => {
+        const osIcon = p.isOverseas ? "🌍 " : "";
+        const priceText =
+          p.from === "retained" ? "Retained" : `₹${(p.price || 0).toFixed(2)} cr`;
+        const srcTag = p.from === "retained" ? "RET" : "AUC";
+        const roleText = p.role ? ` – ${p.role}` : "";
+
+        lines.push(
+          `  • ${osIcon}${p.name}${roleText} (${priceText}, ${srcTag})`
+        );
+      });
+
+      lines.push(""); // blank line between sections
+    });
+
+    alert(lines.join("\n"));
+  }
+
+  function renderTeamsSummary() {
+  teamListEl.innerHTML = "";
+  teamsState.forEach((team) => {
+    const row = document.createElement("div");
+    row.className = "team-row";
+
+    const left = document.createElement("div");
+    left.className = "team-meta";
+    const title = document.createElement("div");
+
+    const logoStyle = team.logoUrl
+      ? `background-image:url('${team.logoUrl}');`
+      : `background-color:${team.color};`;
+
+    title.innerHTML = `<span class="team-logo" style="${logoStyle}"></span>${team.name}`;
+    const sub = document.createElement("div");
+    sub.className = "small-text";
+    sub.textContent = `${
+      team.isHuman ? "Human" : "Computer"
+    } • Owner: ${team.ownerName || "—"}`;
+
+    left.appendChild(title);
+    left.appendChild(sub);
+
+    const right = document.createElement("div");
+    right.className = "team-meta";
+    const purse = document.createElement("div");
+    purse.className = "small-text";
+    purse.innerHTML = `Purse: <span class="highlight">${team.purse.toFixed(
+      2
+    )} cr</span>`;
+    const squad = document.createElement("div");
+    squad.className = "small-text muted";
+    const remainingSlots = MAX_SQUAD_SIZE - team.squad.length;
+    const remainingOS = 8 - team.overseasBought;
+    squad.textContent = `Squad: ${team.squad.length} players • Overseas: ${team.overseasBought}/8 • Slots left: ${remainingSlots} • OS slots left: ${remainingOS}`;
+
+    right.appendChild(purse);
+    right.appendChild(squad);
+
+    row.appendChild(left);
+    row.appendChild(right);
+
+    row.addEventListener("click", () => openSquadWindow(team));
+
+    teamListEl.appendChild(row);
+  });
+}
+
+function getRoleBucket(role, from) {
+  if (!role) return "OTHER";
+  const r = role.toLowerCase();
+  // Check for wicketkeeper FIRST (before batter check)
+  if (r.includes("wicket") || r.includes("wk") || r.includes("keeper")) return "WK";
+  if (r.includes("all-rounder") || r.includes("allrounder")) return "AR";
+  if (r.includes("bowler")) return "BOWL";
+  if (r.includes("batter") || r.includes("bat")) return "BAT";
+  return "OTHER";
+}
+
+function renderTeamSquads() {
+  teamSquadListEl.innerHTML = "";
+  let idx = 0; // index so we can auto-open only the first team
+
+  teamsState.forEach((team) => {
+    const details = document.createElement("details");
+    details.className = "squad-team-block";
+    details.open = false;
+
+    const summary = document.createElement("summary");
+
+    const left = document.createElement("div");
+    left.style.display = "flex";
+    left.style.alignItems = "center";
+    left.style.gap = "0.4rem";
+
+    const logoStyle = team.logoUrl
+      ? `background-image:url('${team.logoUrl}');`
+      : `background-color:${team.color};`;
+
+    const logoSpan = document.createElement("span");
+    logoSpan.className = "team-logo";
+    logoSpan.style.cssText += logoStyle;
+
+    const title = document.createElement("div");
+    title.style.fontSize = "0.7rem";
+    title.style.fontWeight = "600";
+    title.textContent = team.name;
+
+    left.appendChild(logoSpan);
+    left.appendChild(title);
+
+    const right = document.createElement("div");
+    right.className = "squad-team-meta";
+    const remainingSlots = MAX_SQUAD_SIZE - team.squad.length;
+    const remainingOS = 8 - team.overseasBought;
+    right.textContent = `Purse: ₹${team.purse.toFixed(
+      2
+    )} cr • Squad: ${team.squad.length} • OS: ${team.overseasBought}/8 • Slots left: ${remainingSlots} • OS slots left: ${remainingOS}`;
+
+    summary.appendChild(left);
+    summary.appendChild(right);
+
+    details.appendChild(summary);
+
+    const buckets = {
+      BAT: [],
+      BOWL: [],
+      AR: [],
+      WK: [],
+      OTHER: []
+    };
+
+    team.squad.forEach((p) => {
+      const bucket = getRoleBucket(p.role, p.from);
+      buckets[bucket].push(p);
+    });
+
+    const bucketOrder = ["BAT", "WK", "AR", "BOWL", "OTHER"];
+    const bucketLabels = {
+      BAT: "Batters",
+      WK: "Wicket-keepers",
+      AR: "All-rounders",
+      BOWL: "Bowlers",
+      OTHER: "Other / Retained (role unknown)"
+    };
+
+    bucketOrder.forEach((key) => {
+      const list = buckets[key];
+      if (!list || list.length === 0) return;
+
+      const roleBlock = document.createElement("div");
+      roleBlock.className = "squad-role-block";
+
+      const roleTitle = document.createElement("div");
+      roleTitle.className = "squad-role-title";
+      roleTitle.textContent = bucketLabels[key];
+
+      roleBlock.appendChild(roleTitle);
+
+      list.forEach((p) => {
+        const line = document.createElement("div");
+        line.className = "squad-player-line";
+
+        const osIcon = p.isOverseas ? "🌍" : "";
+        const priceText =
+          p.from === "retained"
+            ? "Retained"
+            : `₹${(p.price || 0).toFixed(2)} cr`;
+
+        const roleText = p.role ? ` – ${p.role}` : "";
+
+        line.innerHTML = `${osIcon} ${p.name}${roleText} <span class="badge">${priceText}</span>`;
+
+        roleBlock.appendChild(line);
+      });
+
+      details.appendChild(roleBlock);
+    });
+
+    // auto-open only the first team card
+    if (idx === 0) {
+      details.open = true;
+    }
+    idx++;
+
+    teamSquadListEl.appendChild(details);
+  });
+}
+
+// ---- Squad Window Helpers ----
+function buildSquadWindowHtml(team, activeTabKey = "BAT") {
+  const buckets = { BAT: [], WK: [], AR: [], BOWL: [] };
+
+  team.squad.forEach((p) => {
+    const bucket = getRoleBucket(p.role, p.from);
+    const key = buckets[bucket] ? bucket : "BAT"; // default unknown to batters
+    buckets[key].push(p);
+  });
+
+  const bucketOrder = ["BAT", "WK", "AR", "BOWL"];
+  const bucketLabels = {
+    BAT: "Batters",
+    WK: "Wicket-keepers",
+    AR: "All-rounders",
+    BOWL: "Bowlers"
+  };
+
+  function buildRows(list, label) {
+    if (!list || list.length === 0) {
+      return `<tr><td colspan="4">No ${label.toLowerCase()} yet.</td></tr>`;
+    }
+    return list
+      .map((p) => {
+        const osIcon = p.isOverseas ? "🌍" : "";
+        const priceText =
+          p.from === "retained" ? "Retained" : `₹${(p.price || 0).toFixed(2)} cr`;
+        const srcText = p.from === "retained" ? "Retained" : "Auction";
+        const roleText = p.role || "";
+        return (
+          `<tr>` +
+          `<td>${osIcon} ${p.name}</td>` +
+          `<td>${roleText}</td>` +
+          `<td>${priceText}</td>` +
+          `<td>${srcText}</td>` +
+          `</tr>`
+        );
+      })
+      .join("");
+  }
+
+  const panelsHtml = bucketOrder
+    .map((key) => {
+      const activeClass = key === activeTabKey ? "tab-panel active" : "tab-panel";
+      const label = bucketLabels[key];
+      const rows = buildRows(buckets[key], label);
+      return (
+        `<div id="tab-${key}" class="${activeClass}">` +
+        `<table>` +
+        `<thead><tr><th>Player</th><th>Role</th><th>Price</th><th>Source</th></tr></thead>` +
+        `<tbody>${rows}</tbody>` +
+        `</table>` +
+        `</div>`
+      );
+    })
+    .join("");
+
+  const logoStyle = team.logoUrl
+    ? `background-image:url('${team.logoUrl}');`
+    : `background-color:${team.color};`;
+
+  const scriptTagOpen = "<scr" + "ipt>";
+  const scriptTagClose = "</scr" + "ipt>";
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>${team.name} Squad</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 1rem 1.5rem;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI';
+      background: #020617;
+      color: #e5e7eb;
+    }
+    h1 {
+      font-size: 1.4rem;
+      margin: 0 0 0.5rem;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .team-logo {
+      width: 32px;
+      height: 32px;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      border-radius: 0.4rem;
+      ${logoStyle}
+    }
+    .meta {
+      font-size: 0.8rem;
+      opacity: 0.85;
+      margin-bottom: 0.75rem;
+    }
+    .tabs {
+      display: flex;
+      gap: 0.4rem;
+      margin-bottom: 0.5rem;
+    }
+    .tab-btn {
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #e5e7eb;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: #22c55e;
+      color: #020617;
+      border-color: #16a34a;
+    }
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+
+.pause-team-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.pause-team-btn {
+  padding: 0.25rem 0.8rem;
+  border-radius: 9999px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #e5e7eb;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.pause-team-btn.active {
+  background: #22c55e;
+  color: #020617;
+  border-color: #16a34a;
+}
+
+.pause-team-btn.resume {
+  background: #f97316;
+  color: #020617;
+  border-color: #ea580c;
+}
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    th, td {
+      border: 1px solid #334155;
+      padding: 0.35rem 0.5rem;
+      text-align: left;
+    }
+    th {
+      background: #0f172a;
+      font-weight: 600;
+    }
+    tr:nth-child(even) {
+      background: #020617;
+    }
+    tr:nth-child(odd) {
+      background: #020617;
+    }
+    tr:hover {
+      background: #111827;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="team-logo"></div>
+    <div>
+      <h1>${team.name} Squad</h1>
+    <div class="meta">Purse: ₹${team.purse.toFixed(2)} cr • Squad size: ${team.squad.length} • Overseas bought: ${team.overseasBought}/8</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn ${activeTabKey === "BAT" ? "active" : ""}" data-tab="BAT">Batters</button>
+    <button class="tab-btn ${activeTabKey === "WK" ? "active" : ""}" data-tab="WK">Wicket-keepers</button>
+    <button class="tab-btn ${activeTabKey === "AR" ? "active" : ""}" data-tab="AR">All-rounders</button>
+    <button class="tab-btn ${activeTabKey === "BOWL" ? "active" : ""}" data-tab="BOWL">Bowlers</button>
+  </div>
+  ${panelsHtml}
+  ${scriptTagOpen}
+  (function() {
+    var buttons = document.querySelectorAll('.tab-btn');
+    var panels = document.querySelectorAll('.tab-panel');
+    buttons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var tab = btn.getAttribute('data-tab');
+        buttons.forEach(function(b) { b.classList.remove('active'); });
+        panels.forEach(function(p) { p.classList.remove('active'); });
+        btn.classList.add('active');
+        var panel = document.getElementById('tab-' + tab);
+        if (panel) panel.classList.add('active');
+      });
+    });
+  })();
+  ${scriptTagClose}
+</body>
+</html>`;
+}
+
+function renderSquadWindow(team) {
+  const entry = squadWindows[team.id];
+  if (!entry || !entry.win || entry.win.closed) return;
+  const doc = entry.win.document;
+
+  let activeTabKey = "BAT";
+  try {
+    const activeBtn = doc.querySelector(".tab-btn.active");
+    if (activeBtn) {
+      activeTabKey = activeBtn.getAttribute("data-tab") || "BAT";
+    }
+  } catch (e) {
+    activeTabKey = "BAT";
+  }
+
+  doc.open();
+  doc.write(buildSquadWindowHtml(team, activeTabKey));
+  doc.close();
+}
+
+function openSquadWindow(team) {
+  let entry = squadWindows[team.id];
+  if (!entry || !entry.win || entry.win.closed) {
+    const win = window.open('', `${team.id}-squad`, 'width=900,height=700');
+    entry = { win };
+    squadWindows[team.id] = entry;
+  }
+  renderSquadWindow(team);
+  entry.win.focus();
+}
+
+function refreshOpenSquadWindows() {
+  Object.keys(squadWindows).forEach((id) => {
+    const entry = squadWindows[id];
+
+    if (!entry || !entry.win || entry.win.closed) {
+      // Clean up references to closed windows
+      delete squadWindows[id];
+      return;
+    }
+
+    const team = teamsState.find((t) => t.id === id);
+    if (team) {
+      renderSquadWindow(team);
+    }
+  });
+}
+
+// ---- Players / Brackets Window Helpers ----
+function buildPlayersWindowHtml(activeTabKey = "marquee") {
+  const tabConfig = [
+    {
+      key: "marquee",
+      label: "Marquee",
+      filter: (p) =>
+        isAuctionEligiblePlayer(p) &&
+        p.bracket === "marquee" &&
+        !soldIds.has(p.id) &&
+        !unsoldIds.has(p.id)
+    },
+    {
+      key: "batter",
+      label: "Batters",
+      filter: (p) =>
+        isAuctionEligiblePlayer(p) &&
+        p.bracket === "batter" &&
+        !soldIds.has(p.id) &&
+        !unsoldIds.has(p.id)
+    },
+    {
+      key: "bowler",
+      label: "Bowlers",
+      filter: (p) =>
+        isAuctionEligiblePlayer(p) &&
+        p.bracket === "bowler" &&
+        !soldIds.has(p.id) &&
+        !unsoldIds.has(p.id)
+    },
+    {
+      key: "allrounder",
+      label: "All-Rounders",
+      filter: (p) =>
+        isAuctionEligiblePlayer(p) &&
+        p.bracket === "allrounder" &&
+        !soldIds.has(p.id) &&
+        !unsoldIds.has(p.id)
+    },
+    {
+      key: "unsold",
+      label: "Unsold",
+      filter: (p) => unsoldIds.has(p.id) && isAuctionEligiblePlayer(p)
+    }
+  ];
+
+  const buildRows = (list, statusOverride = null) => {
+    if (!list || list.length === 0) {
+      return `<tr><td colspan="5">No players in this group.</td></tr>`;
+    }
+    const sorted = [...list].sort((a, b) => {
+      if (a.basePrice !== b.basePrice) return b.basePrice - a.basePrice;
+      return a.name.localeCompare(b.name);
+    });
+    return sorted
+      .map((p) => {
+        const osText = p.isOverseas ? "Overseas" : "Indian";
+        const status =
+          statusOverride ||
+          (unsoldIds.has(p.id)
+            ? "Unsold"
+            : soldIds.has(p.id)
+            ? "Sold"
+            : "In auction");
+        return (
+          `<tr>` +
+          `<td>${p.name}</td>` +
+          `<td>${p.role}</td>` +
+          `<td>₹${p.basePrice.toFixed(2)} cr</td>` +
+          `<td>${p.rating}/10</td>` +
+          `<td>${osText} • ${status}</td>` +
+          `</tr>`
+        );
+      })
+      .join("");
+  };
+
+  const panelsHtml = tabConfig
+    .map((tab) => {
+      const list = PLAYERS_2026.filter(tab.filter);
+      const rows = buildRows(
+        list,
+        tab.key === "unsold" ? "Unsold" : "In auction"
+      );
+      const cls =
+        tab.key === activeTabKey ? "tab-panel active" : "tab-panel";
+      return `
+        <div id="tab-${tab.key}" class="${cls}">
+          <table>
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Role</th>
+                <th>Base Price</th>
+                <th>Rating</th>
+                <th>Type & Status</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+    })
+    .join("");
+
+  const scriptTagOpen = "<scr" + "ipt>";
+  const scriptTagClose = "</scr" + "ipt>";
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>IPL 2026 Player Board</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 1rem 1.5rem;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI';
+      background: #020617;
+      color: #e5e7eb;
+    }
+    h1 {
+      font-size: 1.4rem;
+      margin: 0 0 0.5rem;
+    }
+    .subtitle {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      margin-bottom: 0.75rem;
+    }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.5rem;
+    }
+    .tab-btn {
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #e5e7eb;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: #22c55e;
+      color: #020617;
+      border-color: #16a34a;
+    }
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      margin-bottom: 0.75rem;
+    }
+    th, td {
+      border: 1px solid #334155;
+      padding: 0.3rem 0.45rem;
+      text-align: left;
+    }
+    th {
+      background: #0f172a;
+      font-weight: 600;
+    }
+    tr:nth-child(even) {
+      background: #020617;
+    }
+    tr:nth-child(odd) {
+      background: #020617;
+    }
+    tr:hover {
+      background: #111827;
+    }
+  </style>
+</head>
+<body>
+  <h1>IPL 2026 Player Board</h1>
+  <div class="subtitle">
+    Breaking board – players update live as they are Sold or move into the Unsold set.
+  </div>
+  <div class="tabs">
+    ${tabConfig
+      .map((tab) => {
+        const activeClass =
+          tab.key === activeTabKey ? "active" : "";
+        return `<button class="tab-btn ${activeClass}" data-tab="${tab.key}">${tab.label}</button>`;
+      })
+      .join("")}
+  </div>
+  ${panelsHtml}
+  ${scriptTagOpen}
+  (function() {
+    var buttons = document.querySelectorAll('.tab-btn');
+    var panels = document.querySelectorAll('.tab-panel');
+    buttons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var tab = btn.getAttribute('data-tab');
+        buttons.forEach(function(b) { b.classList.remove('active'); });
+        panels.forEach(function(p) { p.classList.remove('active'); });
+        btn.classList.add('active');
+        var panel = document.getElementById('tab-' + tab);
+        if (panel) panel.classList.add('active');
+      });
+    });
+  })();
+  ${scriptTagClose}
+</body>
+</html>`;
+}
+
+function renderPlayersWindow() {
+  if (!playersWindow || playersWindow.closed) return;
+  const doc = playersWindow.document;
+
+  let activeTabKey = "marquee";
+  try {
+    const activeBtn = doc.querySelector(".tab-btn.active");
+    if (activeBtn) {
+      activeTabKey = activeBtn.getAttribute("data-tab") || "marquee";
+    }
+  } catch (e) {
+    activeTabKey = "marquee";
+  }
+
+  doc.open();
+  doc.write(buildPlayersWindowHtml(activeTabKey));
+  doc.close();
+}
+
+function openPlayersWindow() {
+  if (!playersWindow || playersWindow.closed) {
+    playersWindow = window.open("", "players-board", "width=900,height=700");
+  }
+  renderPlayersWindow();
+  playersWindow.focus();
+}
+
+function refreshPlayersWindow() {
+  if (!playersWindow || playersWindow.closed) return;
+  renderPlayersWindow();
+}
+
+function renderTeamsList() {
+  // keep old callers working
+  renderTeamsSummary();
+  renderTeamSquads();
+  refreshOpenSquadWindows();
+  }
+
+  function renderControlTeamSelect() {
+    controlTeamSelect.innerHTML = "";
+    teamsState
+      .filter((t) => t.isHuman)
+      .forEach((team) => {
+        const opt = document.createElement("option");
+        opt.value = team.id;
+        opt.textContent = `${team.id} – ${
+          team.ownerName || "Human"
+        } (${team.name})`;
+        controlTeamSelect.appendChild(opt);
+      });
+
+    if (!controlTeamSelect.value && controlTeamSelect.options.length > 0) {
+      controlTeamSelect.value = controlTeamSelect.options[0].value;
+    }
+    if (controlTeamSelect && controlTeamSelect.value) {
+      pauseHintTeamId = controlTeamSelect.value;
+    }
+    renderPauseTeamButtons();
+  }
+
+  function renderSectionList() {
+    if (!sectionSelect || !sectionListEl) {
+      refreshPlayersWindow();
+      return;
+    }
+    const selected = sectionSelect.value;
+    let playersToShow = [];
+
+    if (selected === "unsold") {
+      playersToShow = PLAYERS_2026.filter(
+        (p) => unsoldIds.has(p.id) && isAuctionEligiblePlayer(p)
+      );
+    } else {
+      playersToShow = PLAYERS_2026.filter(
+        (p) => p.bracket === selected && isAuctionEligiblePlayer(p)
+      );
+    }
+
+    sectionListEl.innerHTML = "";
+    if (playersToShow.length === 0) {
+      const div = document.createElement("div");
+      div.className = "log-line";
+      div.textContent = "No players in this section yet.";
+      sectionListEl.appendChild(div);
+      return;
+    }
+
+    playersToShow.forEach((p) => {
+      let status = "In auction";
+      if (soldIds.has(p.id)) status = "Sold";
+      else if (unsoldIds.has(p.id)) status = "Unsold";
+
+      const div = document.createElement("div");
+      div.className = "log-line";
+      div.textContent = `${p.name} – ${p.role} (Base ₹${p.basePrice.toFixed(
+        2
+      )} cr, ${p.isOverseas ? "Overseas" : "Indian"}) [${status}]`;
+      sectionListEl.appendChild(div);
+    });
+
+    // also refresh the pop-out players board if it's open
+    refreshPlayersWindow();
+  }
+
+  function getSaleInfoForPlayer(playerId) {
+    for (const team of teamsState) {
+      const found = team.squad.find(
+        (p) => p.playerId === playerId && p.from === "auction"
+      );
+      if (found) {
+        return { team, info: found };
+      }
+    }
+    return null;
+  }
+
+  function renderPlayerPoolList() {
+    if (!playerPoolListEl) {
+      refreshPlayersWindow();
+      return;
+    }
+
+    playerPoolListEl.innerHTML = "";
+
+    let players = PLAYERS_2026.filter(isAuctionEligiblePlayer);
+
+    const bracketFilter = poolBracketFilterEl?.value || "all";
+    const osFilter = poolOsFilterEl?.value || "all";
+    const statusFilter = poolStatusFilterEl?.value || "all";
+
+    const minBase = poolMinBaseEl?.value
+      ? parseFloat(poolMinBaseEl.value)
+      : null;
+    const maxBase = poolMaxBaseEl?.value
+      ? parseFloat(poolMaxBaseEl.value)
+      : null;
+
+    players = players.filter((p) => {
+      if (bracketFilter !== "all" && p.bracket !== bracketFilter) return false;
+
+      if (osFilter === "indian" && p.isOverseas) return false;
+      if (osFilter === "overseas" && !p.isOverseas) return false;
+
+      const isSold = soldIds.has(p.id);
+      const isUnsold = unsoldIds.has(p.id);
+      const isAvailable = !isSold && !isUnsold;
+
+      if (statusFilter === "sold" && !isSold) return false;
+      if (statusFilter === "unsold" && !isUnsold) return false;
+      if (statusFilter === "available" && !isAvailable) return false;
+
+      if (minBase != null && p.basePrice < minBase) return false;
+      if (maxBase != null && p.basePrice > maxBase) return false;
+
+      return true;
+    });
+
+    players.sort((a, b) => {
+      const brOrder = { marquee: 0, batter: 1, bowler: 2, allrounder: 3 };
+      const da = brOrder[a.bracket] ?? 99;
+      const db = brOrder[b.bracket] ?? 99;
+      if (da !== db) return da - db;
+      if (a.basePrice !== b.basePrice) return b.basePrice - a.basePrice;
+      return a.name.localeCompare(b.name);
+    });
+
+    if (players.length === 0) {
+      const div = document.createElement("div");
+      div.className = "log-line";
+      div.textContent = "No players match these filters.";
+      playerPoolListEl.appendChild(div);
+      return;
+    }
+
+    players.forEach((p) => {
+      const isSold = soldIds.has(p.id);
+      const isUnsold = unsoldIds.has(p.id);
+      const status = isSold ? "Sold" : isUnsold ? "Unsold" : "Available";
+
+      const div = document.createElement("div");
+      div.className = "log-line";
+      div.style.cursor = "pointer";
+
+      div.textContent = `${p.name} – ${p.role} (Base ₹${p.basePrice.toFixed(
+        2
+      )} cr, ${p.isOverseas ? "Overseas" : "Indian"}) [${status}]`;
+
+      div.addEventListener("click", () => {
+        const saleInfo = getSaleInfoForPlayer(p.id);
+        if (!saleInfo) {
+          alert(
+            `${p.name}\n\nRole: ${p.role}\nBracket: ${sectionLabelForBracket(
+              p.bracket
+            )}\nBase price: ₹${p.basePrice.toFixed(
+              2
+            )} cr\nStatus: ${status}\n\nNot sold in auction yet.`
+          );
+        } else {
+          const { team, info } = saleInfo;
+          alert(
+            `${p.name}\n\nRole: ${p.role}\nBracket: ${sectionLabelForBracket(
+              p.bracket
+            )}\nBase price: ₹${p.basePrice.toFixed(
+              2
+            )} cr\nStatus: Sold\n\nBought by: ${
+              team.name
+            }\nPrice: ₹${(info.price || 0).toFixed(2)} cr`
+          );
+        }
+      });
+
+      playerPoolListEl.appendChild(div);
+    });
+
+    // keep external players board synced with any status changes
+    refreshPlayersWindow();
+  }
+
+  // ----------------------------
+  // AI BIDDING
+  // ----------------------------
+
+  function getTeamById(id) {
+    return teamsState.find((t) => t.id === id);
+  }
+  // ----------------------------
+// AI STRATEGY CONFIG
+// ----------------------------
+
+// Rough target composition per role bucket
+const TARGET_COMPOSITION = {
+  BAT: 6,   // batters (top+middle)
+  WK: 2,    // wicketkeepers
+  AR: 4,    // all-rounders
+  BOWL: 8   // frontline bowlers
+};
+
+// Home ground profiles – tweak as you like
+const DEFAULT_HOME_PROFILE = {
+  spinBias: 0,
+  paceBias: 0,
+  battingBias: 0
+};
+
+const TEAM_HOME_PROFILES = {
+  CSK: { spinBias: 0.8, paceBias: -0.2, battingBias: 0.3 },   // Chepauk: spin, lower scores
+  MI:  { spinBias: -0.1, paceBias: 0.5, battingBias: 0.7 },   // Wankhede: pace + high scoring
+  KKR: { spinBias: 0.4, paceBias: 0.2, battingBias: 0.2 },
+  RCB: { spinBias: -0.1, paceBias: 0.4, battingBias: 0.8 },   // flat deck, bat-heavy
+  PBKS:{ spinBias: 0.1, paceBias: 0.3, battingBias: 0.4 },
+  GT:  { spinBias: 0.2, paceBias: 0.3, battingBias: 0.3 },
+  RR:  { spinBias: 0.3, paceBias: 0.2, battingBias: 0.4 },
+  SRH: { spinBias: 0.0, paceBias: 0.6, battingBias: 0.3 },    // Uppal: good for pace
+  LSG: { spinBias: 0.3, paceBias: 0.2, battingBias: 0.1 },
+  DC:  { spinBias: 0.1, paceBias: 0.3, battingBias: 0.4 }
+};
+
+// Different personalities per team – THIS is what makes them feel different
+const DEFAULT_STRATEGY = {
+  aggression: 0.7,       // how willing to push to ceiling
+  needWeight: 1.5,       // how much to prioritize role gaps
+  scarcityWeight: 1.1,   // how much to care if type is rare
+  groundWeight: 0.9,     // how much to respect home-ground bias
+  starBias: 0,           // love marquee names
+  allrounderBias: 0,
+  domesticBias: 0,
+  overseasBias: 0,
+  valueDiscipline: 0.6   // higher => more price sensitive
+};
+
+const TEAM_STRATEGY_PRESETS = {
+  CSK: {
+    aggression: 0.6,
+    needWeight: 1.8,
+    scarcityWeight: 1.2,
+    groundWeight: 1.3,   // very condition-aware
+    starBias: 0.3,
+    allrounderBias: 0.6,
+    domesticBias: 0.4,   // loves domestic cores
+    overseasBias: 0.1,
+    valueDiscipline: 0.8 // very value-conscious
+  },
+  MI: {
+    aggression: 0.9,     // loves big splashes
+    needWeight: 1.2,
+    scarcityWeight: 1.0,
+    groundWeight: 0.7,
+    starBias: 0.9,
+    allrounderBias: 0.4,
+    domesticBias: 0.1,
+    overseasBias: 0.3,
+    valueDiscipline: 0.4
+  },
+  KKR: {
+    aggression: 0.8,
+    needWeight: 1.4,
+    scarcityWeight: 1.2,
+    groundWeight: 0.9,
+    starBias: 0.7,
+    allrounderBias: 0.5,
+    domesticBias: 0.2,
+    overseasBias: 0.2,
+    valueDiscipline: 0.5
+  },
+  RCB: {
+    aggression: 0.85,
+    needWeight: 1.3,
+    scarcityWeight: 1.0,
+    groundWeight: 0.7,
+    starBias: 0.8,
+    allrounderBias: 0.3,
+    domesticBias: 0.2,
+    overseasBias: 0.2,
+    valueDiscipline: 0.5
+  },
+  PBKS: {
+    aggression: 0.7,
+    needWeight: 1.6,
+    scarcityWeight: 1.3,
+    groundWeight: 0.9,
+    starBias: 0.4,
+    allrounderBias: 0.5,
+    domesticBias: 0.3,
+    overseasBias: 0.1,
+    valueDiscipline: 0.7
+  },
+  GT: {
+    aggression: 0.65,
+    needWeight: 1.7,
+    scarcityWeight: 1.2,
+    groundWeight: 1.0,
+    starBias: 0.4,
+    allrounderBias: 0.7,
+    domesticBias: 0.3,
+    overseasBias: 0.2,
+    valueDiscipline: 0.7
+  },
+  RR: {
+    aggression: 0.75,
+    needWeight: 1.6,
+    scarcityWeight: 1.1,
+    groundWeight: 1.0,
+    starBias: 0.5,
+    allrounderBias: 0.6,
+    domesticBias: 0.3,
+    overseasBias: 0.2,
+    valueDiscipline: 0.6
+  },
+  SRH: {
+    aggression: 0.8,
+    needWeight: 1.5,
+    scarcityWeight: 1.2,
+    groundWeight: 1.0,
+    starBias: 0.5,
+    allrounderBias: 0.4,
+    domesticBias: 0.2,
+    overseasBias: 0.2,
+    valueDiscipline: 0.6
+  },
+  LSG: {
+    aggression: 0.7,
+    needWeight: 1.5,
+    scarcityWeight: 1.1,
+    groundWeight: 0.9,
+    starBias: 0.4,
+    allrounderBias: 0.7,
+    domesticBias: 0.3,
+    overseasBias: 0.2,
+    valueDiscipline: 0.7
+  },
+  DC: {
+    aggression: 0.75,
+    needWeight: 1.5,
+    scarcityWeight: 1.0,
+    groundWeight: 0.9,
+    starBias: 0.6,
+    allrounderBias: 0.4,
+    domesticBias: 0.2,
+    overseasBias: 0.2,
+    valueDiscipline: 0.6
+  }
+};
+
+const PLAYER_TRAIT_KEYS = [
+  "keeper",
+  "spin",
+  "wrist_spin",
+  "pace",
+  "death_pace",
+  "finisher",
+  "top",
+  "allrounder",
+  "anchor",
+  "left_arm"
+];
+
+const AI_TUNING = {
+  utility: {
+    panicMultiplier: 0.25,
+    desperationWeight: 0.6,
+    tierBonuses: { core: 1.6, specialist: 0.7 },
+    starBiasScale: 0.3
+  },
+  pricing: {
+    baseUtilityWeight: 0.7,
+    stageMultipliers: {
+      early: 1.05,
+      mid: 1.0,
+      late: 0.9,
+      unsold: 0.75,
+      default: 1.0
+    },
+    tierAggressionAdjust: { core: 0.15, flyer: -0.15 },
+    panicAggressionBonus: 0.1,
+    maxPercent: {
+      min: 0.25,
+      max: 0.7,
+      coreBonus: 0.15,
+      flyerPenalty: 0.1,
+      panicBonus: 0.05
+    },
+    minPerSlot: 0.2,
+    panicPriceMultiplier: 0.15
+  },
+  bidding: {
+    planAggroBoost: 0.1,
+    humanInterestDurations: { short: 2000, medium: 5000 },
+    humanInterestWeights: { short: 0.15, medium: 0.3, long: 0.5 },
+    rivalryBaseBoost: 0.4,
+    panicAggroFactor: 0.3,
+    regretStackWeight: 0.3,
+    playerFitThreshold: 7.5,
+    minBluffPurse: 8,
+    minBluffSlots: 4,
+    leaderComfortSpend: 0.6,
+    valueRatioFlex: 0.7,
+    baseValueThreshold: 2.5,
+    minValueThreshold: 1.2,
+    valueDisciplineWeight: 0.7,
+    valueDisciplineFloor: 0.5,
+    desperationWeight: 0.4,
+    planAggroWeight: 1,
+    rivalryConfidenceWeight: 1,
+    regretPenaltyWeight: 0.5,
+    humanInterestWeight: 0.4,
+    bluffBackfirePenalty: 0.4,
+    bluff: {
+      baseCapRatio: 0.7,
+      capWarmup: 0.05,
+      heatWeight: 0.05,
+      bonusCap: 0.15,
+      chaosBaseChance: 0.12,
+      chaosMinChance: 0.05,
+      disciplineWeight: 0.08,
+      extraStepsMax: 2,
+      maxPurseFraction: 0.3
+    }
+  },
+  desire: {
+    percentiles: { must: 0.82, good: 0.58 },
+    percentileAggressionWeight: 0.1,
+    minSamples: 20,
+    qualityFloor: { must: 6.5, good: 5.5 },
+    fallback: {
+      baseTop: 8.5,
+      baseGood: 7.0,
+      aggressionBaseline: 0.7,
+      aggressionTopScale: 0.5,
+      aggressionGoodScale: 0.3
+    }
+  },
+  timers: {
+  autoSellSeconds: 45,
+  autoUnsoldSeconds: 60,
+  pauseResumeBufferMs: 1200,
+  aiTickMs: 1100,
+  autoTickMs: 1000
+},
+  underdog: {
+    aggressionBonus: 0.2,
+    priorityWeight: 2.5,
+    pursePerSlotThreshold: 1.5
+  },
+  overseas: {
+    preferCount: 6,
+    maxSlots: 8,
+    aggressionBonus: 0.2,
+    upgradeThreshold: 0.15,
+    priorityWeight: 2,
+    qualityRatingFloor: 7,
+    bufferMultiplier: 3
+  },
+  debug: {
+    topFactors: 5
+  }
+};
+
+let UTILITY_DEBUG_ENABLED = false;
+const MAX_UTILITY_SAMPLES = 400;
+const UTILITY_SAMPLES = [];
+let utilitySamplesSorted = [];
+let utilitySamplesDirty = false;
+const UTILITY_CACHE = new Map();
+
+function bumpTeamStateVersion(team) {
+  if (!team) return;
+  team.stateVersion = (team.stateVersion || 0) + 1;
+  teamLandscapeVersion += 1;
+  MARKET_HOTNESS_CACHE.clear();
+  const prefix = `${team.id}:`;
+  const keysToDelete = [];
+  UTILITY_CACHE.forEach((value, key) => {
+    if (key.startsWith(prefix)) {
+      keysToDelete.push(key);
+    }
+  });
+  keysToDelete.forEach((k) => UTILITY_CACHE.delete(k));
+}
+
+const DEFAULT_BLUEPRINT = {
+  identity: "balanced",
+  rivalries: [],
+  loyalty: [],
+  loyaltySet: new Set(),
+  desiredTraits: {
+    pace: 5,
+    spin: 4,
+    keeper: 2,
+    finisher: 3,
+    top: 3,
+    allrounder: 3,
+    anchor: 2
+  },
+  traitWeights: {},
+  spendingCurve: {
+    early: 0.5,
+    mid: 0.4,
+    late: 0.3
+  },
+  unsoldFocus: ["pace", "spin"]
+};
+
+function createBlueprint(overrides = {}) {
+  return {
+    identity: overrides.identity || DEFAULT_BLUEPRINT.identity,
+    rivalries: overrides.rivalries || DEFAULT_BLUEPRINT.rivalries,
+    loyalty: overrides.loyalty || [],
+    loyaltySet: new Set((overrides.loyalty || []).map(stripNameTags)),
+    desiredTraits: {
+      ...DEFAULT_BLUEPRINT.desiredTraits,
+      ...(overrides.desiredTraits || {})
+    },
+    traitWeights: {
+      ...DEFAULT_BLUEPRINT.traitWeights,
+      ...(overrides.traitWeights || {})
+    },
+    spendingCurve: {
+      ...DEFAULT_BLUEPRINT.spendingCurve,
+      ...(overrides.spendingCurve || {})
+    },
+    unsoldFocus: overrides.unsoldFocus || DEFAULT_BLUEPRINT.unsoldFocus
+  };
+}
+
+const TEAM_BLUEPRINTS = {
+  CSK: createBlueprint({
+    identity: "spin-smart value hunting",
+    rivalries: ["MI", "RCB"],
+    loyalty: ["MS Dhoni", "Ruturaj Gaikwad", "Ravindra Jadeja", "Deepak Chahar"],
+    desiredTraits: {
+      spin: 6,
+      pace: 4,
+      keeper: 2,
+      finisher: 3,
+      top: 3,
+      allrounder: 4,
+      death_pace: 2
+    },
+    traitWeights: {
+      spin: 1.3,
+      keeper: 1.1,
+      finisher: 1.05,
+      death_pace: 1.2
+    },
+    spendingCurve: { early: 0.62, mid: 0.48, late: 0.35 },
+    unsoldFocus: ["spin", "keeper", "finisher"]
+  }),
+  MI: createBlueprint({
+    identity: "power hitters + pace battery",
+    rivalries: ["CSK", "RCB"],
+    loyalty: ["Rohit Sharma", "Hardik Pandya", "Suryakumar Yadav", "Jasprit Bumrah"],
+    desiredTraits: {
+      pace: 6,
+      spin: 3,
+      keeper: 2,
+      finisher: 4,
+      top: 4,
+      allrounder: 4,
+      death_pace: 2
+    },
+    traitWeights: {
+      pace: 1.2,
+      finisher: 1.25,
+      top: 1.1,
+      death_pace: 1.15
+    },
+    spendingCurve: { early: 0.6, mid: 0.5, late: 0.4 },
+    unsoldFocus: ["pace", "finisher"]
+  }),
+  KKR: createBlueprint({
+    identity: "wrist spin and finishers",
+    rivalries: ["MI", "RCB"],
+    loyalty: ["Sunil Narine", "Andre Russell", "Rinku Singh"],
+    desiredTraits: {
+      spin: 5,
+      wrist_spin: 3,
+      finisher: 4,
+      pace: 4,
+      top: 3,
+      allrounder: 4
+    },
+    traitWeights: {
+      wrist_spin: 1.3,
+      finisher: 1.2,
+      pace: 1.05
+    },
+    spendingCurve: { early: 0.58, mid: 0.45, late: 0.33 },
+    unsoldFocus: ["wrist_spin", "finisher"]
+  }),
+  RCB: createBlueprint({
+    identity: "batting firepower + death pace",
+    rivalries: ["CSK", "MI", "KKR"],
+    loyalty: ["Virat Kohli", "Glenn Maxwell", "Mohammed Siraj"],
+    desiredTraits: {
+      top: 4,
+      finisher: 4,
+      pace: 5,
+      spin: 3,
+      allrounder: 4,
+      death_pace: 2
+    },
+    traitWeights: {
+      top: 1.25,
+      finisher: 1.3,
+      death_pace: 1.15
+    },
+    spendingCurve: { early: 0.65, mid: 0.5, late: 0.35 },
+    unsoldFocus: ["death_pace", "finisher"]
+  }),
+  PBKS: createBlueprint({
+    identity: "pace and domestic top order",
+    rivalries: ["RCB", "RR"],
+    loyalty: ["Shikhar Dhawan", "Arshdeep Singh"],
+    desiredTraits: {
+      pace: 5,
+      spin: 4,
+      keeper: 2,
+      finisher: 3,
+      top: 4,
+      allrounder: 4
+    },
+    traitWeights: {
+      pace: 1.2,
+      top: 1.1,
+      allrounder: 1.05
+    },
+    spendingCurve: { early: 0.55, mid: 0.45, late: 0.35 },
+    unsoldFocus: ["pace", "top"]
+  }),
+  GT: createBlueprint({
+    identity: "flexible all-rounders",
+    rivalries: ["RR", "CSK"],
+    loyalty: ["Shubman Gill", "Rashid Khan"],
+    desiredTraits: {
+      allrounder: 5,
+      pace: 4,
+      spin: 4,
+      finisher: 3,
+      top: 3,
+      death_pace: 2
+    },
+    traitWeights: {
+      allrounder: 1.25,
+      spin: 1.1,
+      death_pace: 1.05
+    },
+    spendingCurve: { early: 0.58, mid: 0.46, late: 0.34 },
+    unsoldFocus: ["allrounder", "spin"]
+  }),
+  RR: createBlueprint({
+    identity: "spin twins + Indian youth",
+    rivalries: ["RCB", "PBKS"],
+    loyalty: ["Sanju Samson", "Yuzvendra Chahal", "Jos Buttler"],
+    desiredTraits: {
+      spin: 5,
+      pace: 4,
+      keeper: 2,
+      top: 4,
+      finisher: 3,
+      wrist_spin: 2
+    },
+    traitWeights: {
+      spin: 1.2,
+      wrist_spin: 1.15,
+      top: 1.05
+    },
+    spendingCurve: { early: 0.57, mid: 0.44, late: 0.33 },
+    unsoldFocus: ["spin", "keeper"]
+  }),
+  SRH: createBlueprint({
+    identity: "high pace + overseas punch",
+    rivalries: ["MI", "RCB"],
+    loyalty: ["Bhuvneshwar Kumar", "Abhishek Sharma"],
+    desiredTraits: {
+      pace: 6,
+      spin: 3,
+      finisher: 3,
+      top: 3,
+      allrounder: 3,
+      death_pace: 2
+    },
+    traitWeights: {
+      pace: 1.25,
+      death_pace: 1.2,
+      finisher: 1.05
+    },
+    spendingCurve: { early: 0.6, mid: 0.48, late: 0.36 },
+    unsoldFocus: ["pace", "finisher"]
+  }),
+  LSG: createBlueprint({
+    identity: "multi-keeper and spin control",
+    rivalries: ["CSK", "MI"],
+    loyalty: ["KL Rahul", "Nicholas Pooran", "Marcus Stoinis"],
+    desiredTraits: {
+      keeper: 3,
+      spin: 4,
+      pace: 4,
+      allrounder: 4,
+      finisher: 3,
+      top: 3
+    },
+    traitWeights: {
+      keeper: 1.25,
+      allrounder: 1.15,
+      spin: 1.1
+    },
+    spendingCurve: { early: 0.58, mid: 0.46, late: 0.34 },
+    unsoldFocus: ["keeper", "spin"]
+  }),
+  DC: createBlueprint({
+    identity: "left-arm pace + middle solidity",
+    rivalries: ["MI", "RCB"],
+    loyalty: ["Rishabh Pant", "Axar Patel", "Kuldeep Yadav"],
+    desiredTraits: {
+      pace: 5,
+      spin: 4,
+      keeper: 2,
+      finisher: 3,
+      top: 4,
+      allrounder: 3,
+      left_arm: 2
+    },
+    traitWeights: {
+      left_arm: 1.2,
+      pace: 1.1,
+      top: 1.05
+    },
+    spendingCurve: { early: 0.56, mid: 0.44, late: 0.33 },
+    unsoldFocus: ["left_arm", "pace"]
+  })
+};
+
+const PLAYER_RELEASE_MAP = {
+  // CSK releases
+  "Rahul Tripathi": "CSK",
+  "Vansh Bedi": "CSK",
+  "Andre Siddarth": "CSK",
+  "Rachin Ravindra": "CSK",
+  "Deepak Hooda": "CSK",
+  "Vijay Shankar": "CSK",
+  "Shaik Rasheed": "CSK",
+  "Kamlesh Nagarkoti": "CSK",
+  "Matheesha Pathirana": "CSK",
+  // DC releases
+  "Faf du Plessis": "DC",
+  "Jake Fraser-McGurk": "DC",
+  "Sediqullah Atal": "DC",
+  "Manvanth Kumar": "DC",
+  "Mohit Sharma": "DC",
+  "Darshan Nalkande": "DC",
+  // KKR releases
+  "Venkatesh Iyer": "KKR",
+  "Anrich Nortje": "KKR",
+  "Quinton de Kock": "KKR",
+  "Spencer Johnson": "KKR",
+  "Moeen Ali": "KKR",
+  "Rahmanullah Gurbaz": "KKR",
+  "Andre Russell": "KKR",
+  "Luvnith Sisodia": "KKR",
+  "Chetan Sakariya": "KKR",
+  // MI releases
+  "Satyanarayana Raju": "MI",
+  "Reece Topley": "MI",
+  "KL Shrijith": "MI",
+  "Karn Sharma": "MI",
+  "Bevon Jacobs": "MI",
+  "Mujeeb Ur Rahman": "MI",
+  "Lizaad Williams": "MI",
+  "Vignesh Puthur": "MI",
+  // RR releases
+  "Wanindu Hasaranga": "RR",
+  "Maheesh Theekshana": "RR",
+  "Kunal Rathore": "RR",
+  "Fazalhaq Farooqi": "RR",
+  "Akash Madhwal": "RR",
+  "Ashok Sharma": "RR",
+  "Kumar Kartikeya": "RR",
+  // LSG releases
+  "Akash Deep": "LSG",
+  "Ravi Bishnoi": "LSG",
+  "Aryan Juyal": "LSG",
+  "David Miller": "LSG",
+  "Yuvraj Chaudhary": "LSG",
+  "Rajvardhan Hangargekar": "LSG",
+  "Shamar Joseph": "LSG",
+  // GT releases
+  "Gerald Coetzee": "GT",
+  "Karim Janat": "GT",
+  "Mahipal Lomror": "GT",
+  "Kulwant Khejroliya": "GT",
+  "Dasun Shanaka": "GT",
+  // PBKS releases
+  "Josh Inglis": "PBKS",
+  "Aaron Hardie": "PBKS",
+  "Glenn Maxwell": "PBKS",
+  "Praveen Dubey": "PBKS",
+  "Kuldeep Sen": "PBKS",
+  // RCB releases
+  "Mayank Agarwal": "RCB",
+  "Swastik Chhikara": "RCB",
+  "Tim Seifert": "RCB",
+  "Liam Livingstone": "RCB",
+  "Lungi Ngidi": "RCB",
+  "Blessing Muzarabani": "RCB",
+  "Mohit Rathee": "RCB",
+  "Manoj Bhandage": "RCB",
+  // SRH releases
+  "Abhinav Manohar": "SRH",
+  "Atharva Taide": "SRH",
+  "Sachin Baby": "SRH",
+  "Wiaan Mulder": "SRH",
+  "Simarjeet Singh": "SRH",
+  "Rahul Chahar": "SRH",
+  "Adam Zampa": "SRH"
+};
+
+const LOYALTY_STRENGTH = {
+  CSK: {
+    "Matheesha Pathirana": 0.8,
+    "Deepak Hooda": 0.5,
+    "Rahul Tripathi": 0.6,
+    "Rachin Ravindra": 0.5
+  },
+  MI: {
+    "Reece Topley": 0.5,
+    "Mujeeb Ur Rahman": 0.6,
+    "Lizaad Williams": 0.4
+  },
+  KKR: {
+    "Venkatesh Iyer": 0.8,
+    "Andre Russell": 1.2,
+    "Quinton de Kock": 0.7,
+    "Rahmanullah Gurbaz": 0.5
+  },
+  RCB: {
+    "Liam Livingstone": 0.7,
+    "Lungi Ngidi": 0.5,
+    "Mayank Agarwal": 0.4
+  },
+  PBKS: {
+    "Glenn Maxwell": 0.8,
+    "Josh Inglis": 0.5,
+    "Aaron Hardie": 0.4
+  },
+  GT: {
+    "Dasun Shanaka": 0.5,
+    "Gerald Coetzee": 0.6
+  },
+  RR: {
+    "Wanindu Hasaranga": 0.9,
+    "Fazalhaq Farooqi": 0.6,
+    "Maheesh Theekshana": 0.5
+  },
+  SRH: {
+    "Rahul Chahar": 0.5,
+    "Adam Zampa": 0.6,
+    "Abhinav Manohar": 0.4
+  },
+  LSG: {
+    "Ravi Bishnoi": 0.8,
+    "David Miller": 0.9,
+    "Rajvardhan Hangargekar": 0.4
+  },
+  DC: {
+    "Faf du Plessis": 0.8,
+    "Jake Fraser-McGurk": 0.7
+  }
+};
+
+const TEAM_TURF_TRAITS = {
+  CSK: ["spin", "keeper"],
+  MI: ["pace", "finisher"],
+  KKR: ["wrist_spin", "finisher"],
+  RCB: ["top", "finisher"],
+  PBKS: ["pace", "top"],
+  GT: ["allrounder", "spin"],
+  RR: ["wrist_spin", "spin"],
+  SRH: ["pace", "death_pace"],
+  LSG: ["keeper", "spin"],
+  DC: ["left_arm", "pace"]
+};
+
+const TEAM_BRAND_COLORS = {
+  CSK: {
+    bg: "#fde047",
+    text: "#1f1a00",
+    subtext: "rgba(31,26,0,0.75)",
+    border: "#facc15",
+    shadow: "rgba(250,204,21,0.45)"
+  },
+  MI: {
+    bg: "#0b4da2",
+    text: "#ecf4ff",
+    subtext: "rgba(236,244,255,0.85)",
+    border: "#0a65c2",
+    shadow: "rgba(10,101,194,0.45)"
+  },
+  RCB: {
+    bg: "#b91c1c",
+    text: "#fff5f5",
+    subtext: "rgba(255,245,245,0.85)",
+    border: "#991b1b",
+    shadow: "rgba(185,28,28,0.45)"
+  },
+  KKR: {
+    bg: "#6d28d9",
+    text: "#f8f5ff",
+    subtext: "rgba(248,245,255,0.85)",
+    border: "#5b21b6",
+    shadow: "rgba(109,40,217,0.45)"
+  },
+  PBKS: {
+    bg: "#dc2626",
+    text: "#fff5f5",
+    subtext: "rgba(255,245,245,0.85)",
+    border: "#b91c1c",
+    shadow: "rgba(220,38,38,0.45)"
+  },
+  GT: {
+    bg: "#0f766e",
+    text: "#e0fffb",
+    subtext: "rgba(224,255,251,0.85)",
+    border: "#0d9488",
+    shadow: "rgba(15,118,110,0.45)"
+  },
+  RR: {
+    bg: "#ec4899",
+    text: "#fff4fa",
+    subtext: "rgba(255,244,250,0.85)",
+    border: "#db2777",
+    shadow: "rgba(236,72,153,0.45)"
+  },
+  SRH: {
+    bg: "#fb923c",
+    text: "#2d1600",
+    subtext: "rgba(45,22,0,0.75)",
+    border: "#f97316",
+    shadow: "rgba(251,146,60,0.45)"
+  },
+  LSG: {
+    bg: "#0ea5e9",
+    text: "#022c43",
+    subtext: "rgba(2,44,67,0.75)",
+    border: "#0284c7",
+    shadow: "rgba(14,165,233,0.4)"
+  },
+  DC: {
+    bg: "#2563eb",
+    text: "#f0f6ff",
+    subtext: "rgba(240,246,255,0.8)",
+    border: "#1d4ed8",
+    shadow: "rgba(37,99,235,0.45)"
+  }
+};
+
+const DEFAULT_BID_CARD_STYLE = {
+  bg: "#f97316",
+  text: "#020617",
+  subtext: "rgba(2,6,23,0.75)",
+  border: "#ea580c",
+  shadow: "rgba(249,115,22,0.4)"
+};
+
+function getBidCardStyle(teamId) {
+  return TEAM_BRAND_COLORS[teamId?.toUpperCase()] || DEFAULT_BID_CARD_STYLE;
+}
+
+const TEAM_RETENTION_SUMMARY = {};
+IPL_TEAMS_2026.forEach((team) => {
+  TEAM_RETENTION_SUMMARY[team.id] = analyzeRetainedCore(team);
+});
+
+function analyzeRetainedCore(teamBase) {
+  const summary = {
+    total: teamBase.retained.length,
+    buckets: { BAT: 0, WK: 0, AR: 0, BOWL: 0 },
+    traits: {},
+    loyaltySet: new Set(teamBase.retained.map((n) => stripNameTags(n)))
+  };
+  teamBase.retained.forEach((name) => {
+    const meta = buildRetainedPlayerMeta(name, teamBase.id);
+    const bucket = getRoleBucket(meta.role, "retained");
+    if (summary.buckets[bucket] != null) summary.buckets[bucket] += 1;
+    const traits = getPlayerTraitList(meta);
+    traits.forEach((trait) => {
+      summary.traits[trait] = (summary.traits[trait] || 0) + 1;
+    });
+  });
+  return summary;
+}
+
+function getPlayerTraitList(player) {
+  const roleText = (player.role || "").toLowerCase();
+  const rating = player.rating ?? 6.5;
+  const tags = [];
+  if (!roleText) return tags;
+
+  if (roleText.includes("keeper")) tags.push("keeper");
+  const isSpin =
+    roleText.includes("spin") ||
+    roleText.includes("leg") ||
+    roleText.includes("wrist");
+  if (isSpin) tags.push("spin");
+  if (roleText.includes("leg") || roleText.includes("wrist"))
+    tags.push("wrist_spin");
+  const isPace =
+    roleText.includes("fast") ||
+    roleText.includes("pace") ||
+    roleText.includes("seam") ||
+    roleText.includes("quick");
+  if (isPace) tags.push("pace");
+  if (
+    isPace &&
+    (roleText.includes("death") ||
+      roleText.includes("yorker") ||
+      rating >= 8)
+  ) {
+    tags.push("death_pace");
+  }
+  if (
+    roleText.includes("finisher") ||
+    roleText.includes("power") ||
+    roleText.includes("middle-order") ||
+    roleText.includes("lower-order")
+  ) {
+    tags.push("finisher");
+  }
+  if (
+    roleText.includes("top") ||
+    roleText.includes("opener") ||
+    roleText.includes("opening")
+  ) {
+    tags.push("top");
+  }
+  if (
+    roleText.includes("all-rounder") ||
+    roleText.includes("allrounder")
+  ) {
+    tags.push("allrounder");
+  }
+  if (roleText.includes("anchor")) tags.push("anchor");
+  if (roleText.includes("left-arm")) tags.push("left_arm");
+
+  return [...new Set(tags)];
+}
+
+function getPlayerTraits(player) {
+  const roleText = (player.role || "").toLowerCase();
+  const battingRaw = (
+    player.battingStyle ||
+    player.battingHand ||
+    player.batting ||
+    ""
+  ).toLowerCase();
+  const bowlingRaw = (
+    player.bowlingStyle ||
+    player.bowling ||
+    ""
+  ).toLowerCase();
+  const includesAny = (source, keywords) =>
+    keywords.some((kw) => source.includes(kw));
+
+  const isLHB =
+    includesAny(battingRaw, ["left", "lhb"]) ||
+    roleText.includes("left-hand");
+  const isRHB =
+    includesAny(battingRaw, ["right", "rhb"]) ||
+    roleText.includes("right-hand");
+  const isLeftArm =
+    includesAny(bowlingRaw, ["left-arm", "left arm"]) ||
+    bowlingRaw.includes("chinaman");
+  const isRightArm = includesAny(bowlingRaw, ["right-arm", "right arm"]);
+  const isWristSpin = includesAny(bowlingRaw, [
+    "legbreak",
+    "leg spin",
+    "chinaman",
+    "wrist"
+  ]);
+  const isFingerSpin = includesAny(bowlingRaw, [
+    "off spin",
+    "offbreak",
+    "orthodox",
+    "finger"
+  ]);
+  const isPace = includesAny(bowlingRaw, [
+    "fast",
+    "medium",
+    "seam",
+    "pace"
+  ]);
+  const isSpin =
+    isWristSpin || isFingerSpin || includesAny(bowlingRaw, ["spin"]);
+  const isLeftArmPacer = isLeftArm && isPace;
+  const isAllrounder = roleText.includes("all");
+  const isTopOrder =
+    roleText.includes("batter") ||
+    roleText.includes("wicket") ||
+    roleText.includes("top");
+  const isMysterySpin = bowlingRaw.includes("chinaman");
+
+  return {
+    isLHB,
+    isRHB,
+    isLeftArm,
+    isRightArm,
+    isWristSpin,
+    isFingerSpin,
+    isSpin,
+    isPace,
+    isLeftArmPacer,
+    isAllrounder,
+    isTopOrder,
+    isMysterySpin
+  };
+}
+
+function analyzeSquadStructure(team) {
+  const needs = {
+    lhbCount: 0,
+    leftArmPaceCount: 0,
+    wristSpinCount: 0,
+    fingerSpinCount: 0,
+    spinCount: 0,
+    overseasCount: 0,
+    topOrderCount: 0,
+    urgentLHB: false,
+    needLeftyPacer: false,
+    needSpin: false
+  };
+  const squad = team?.squad || [];
+  squad.forEach((member) => {
+    const traits = getPlayerTraits(member);
+    if (traits.isLHB) needs.lhbCount += 1;
+    if (traits.isLeftArmPacer) needs.leftArmPaceCount += 1;
+    if (traits.isWristSpin) needs.wristSpinCount += 1;
+    if (traits.isFingerSpin) needs.fingerSpinCount += 1;
+    if (traits.isSpin) needs.spinCount += 1;
+    if (traits.isTopOrder) needs.topOrderCount += 1;
+    if (member.isOverseas) needs.overseasCount += 1;
+  });
+  needs.urgentLHB = needs.lhbCount < 2 && needs.topOrderCount > 3;
+  needs.needLeftyPacer = needs.leftArmPaceCount === 0;
+  needs.needSpin = needs.spinCount < 2;
+  return needs;
+}
+
+function getSquadNeedMultiplier(traits = {}, needs = {}) {
+  let mult = 1;
+  if (needs.urgentLHB && traits.isLHB) mult *= 1.35;
+  if (needs.needLeftyPacer && traits.isLeftArmPacer) mult *= 1.3;
+  if (needs.needSpin && traits.isSpin) mult *= 1.15;
+  return mult;
+}
+
+function getHomeGroundMultiplier(teamId, traits = {}, player = {}) {
+  let mult = 1;
+  const roleText = (player.role || "").toLowerCase();
+  const boostWrist = () => {
+    if (traits.isWristSpin) mult *= 1.15;
+  };
+  switch ((teamId || "").toUpperCase()) {
+    case "CSK":
+      if (traits.isFingerSpin) mult *= 1.25;
+      if (roleText.includes("all")) mult *= 1.1;
+      break;
+    case "MI":
+      if (traits.isLeftArmPacer) mult *= 1.25;
+      if (traits.isPace) mult *= 1.15;
+      if (traits.isFingerSpin) mult *= 0.9;
+      break;
+    case "RCB":
+      if (traits.isWristSpin) mult *= 1.2;
+      if (traits.isFingerSpin) mult *= 0.8;
+      if (traits.isPace) mult *= 1.1;
+      break;
+    case "KKR":
+      if (traits.isWristSpin || traits.isMysterySpin) mult *= 1.15;
+      if (traits.isLHB && roleText.includes("bat")) mult *= 1.1;
+      break;
+    case "SRH":
+      if (traits.isLHB && roleText.includes("bat")) mult *= 1.15;
+      if (traits.isPace) mult *= 1.1;
+      break;
+    case "RR":
+      if (traits.isWristSpin) mult *= 1.1;
+      break;
+    case "GT":
+      if (traits.isWristSpin) mult *= 1.2;
+      break;
+    default:
+      break;
+  }
+  return mult;
+}
+
+function getUnicornMultiplier(player, traits = {}) {
+  let mult = 1;
+  const roleText = (player.role || "").toLowerCase();
+  const battingAvg =
+    player.battingAvg ??
+    player.battingAverage ??
+    player.BattingAvg ??
+    0;
+  if (roleText.includes("all") && battingAvg > 25) {
+    mult *= 1.2;
+  }
+  if (traits.isMysterySpin) {
+    mult *= 1.15;
+  }
+  return mult;
+}
+
+function computeTraitCountsForSquad(squad = []) {
+  const counts = { total: squad.length };
+  PLAYER_TRAIT_KEYS.forEach((key) => {
+    counts[key] = 0;
+  });
+  squad.forEach((player) => {
+    const traits = getPlayerTraitList(player);
+    traits.forEach((trait) => {
+      counts[trait] = (counts[trait] || 0) + 1;
+    });
+  });
+  return counts;
+}
+
+function computeNeedSignals(team, blueprint) {
+  const traitCounts = computeTraitCountsForSquad(team.squad || []);
+  const desired = blueprint.desiredTraits || DEFAULT_BLUEPRINT.desiredTraits;
+  const signals = {};
+  let maxSeverity = 0;
+
+  Object.keys(desired).forEach((trait) => {
+    const target = desired[trait];
+    if (!target) return;
+    const have = traitCounts[trait] || 0;
+    let severity = (target - have) / target;
+    if (severity < 0) severity = 0;
+    const weight = blueprint.traitWeights?.[trait] ?? 1;
+    severity *= weight;
+    signals[trait] = severity;
+    if (severity > maxSeverity) maxSeverity = severity;
+  });
+
+  const slotsNeeded = Math.max(
+    0,
+    MIN_SQUAD_SIZE - (team.squad ? team.squad.length : 0)
+  );
+  const rosterPressure = Math.min(1, slotsNeeded / MIN_SQUAD_SIZE);
+  maxSeverity = Math.max(maxSeverity, rosterPressure);
+
+  return { signals, traitCounts, maxSeverity, rosterPressure };
+}
+
+function getStagePersonality(team, stage) {
+  const base = { aggression: 1, valueDiscipline: 1, starBias: 1 };
+  if (stage === "early") {
+    base.valueDiscipline *= 1.05;
+    if (team.id === "MI" || team.id === "RCB") {
+      base.aggression *= 1.15;
+      base.valueDiscipline *= 0.95;
+    }
+  } else if (stage === "late") {
+    if (team.purse > 15) {
+      base.aggression *= 1.2;
+      base.starBias *= 1.1;
+    }
+    if (team.purse < 3) {
+      base.valueDiscipline *= 1.3;
+      base.aggression *= 0.8;
+    }
+  } else if (stage === "unsold" || stage === "unsold_round_two") {
+    base.valueDiscipline *= 1.35;
+    base.aggression *= 0.7;
+  }
+  return base;
+}
+
+function evaluateKeeperValue(team, player) {
+  const keepers = (team.squad || []).filter((p) =>
+    (p.role || "").toLowerCase().includes("keeper")
+  ).length;
+  let multiplier = 1;
+  let reason = "";
+  if (!(player.role || "").toLowerCase().includes("keeper")) {
+    return { multiplier, reason };
+  }
+  if (keepers === 0) {
+    multiplier = 2.5;
+    reason = "First keeper is critical";
+  } else if (keepers === 1) {
+    multiplier = 1.1;
+    reason = "Second keeper as backup";
+  } else {
+    multiplier = 0.35;
+    reason = "Excess keepers";
+  }
+  return { multiplier, reason };
+}
+
+function evaluateAllrounderValue(team, player) {
+  if (!/all-?rounder/i.test(player.role || "")) {
+    return { multiplier: 1, reason: "" };
+  }
+  const ars = (team.squad || []).filter((p) =>
+    /all-?rounder/i.test(p.role || "")
+  );
+  let multiplier = 1.3;
+  let reason = "All-rounder depth prized";
+  if (ars.length >= 5) {
+    multiplier = 0.7;
+    reason = "Too many all-rounders";
+  } else if (ars.length >= 4) {
+    multiplier = 0.9;
+    reason = "Slight diminishing returns";
+  } else {
+    const bowlers = (team.squad || []).filter((p) =>
+      (p.role || "").toLowerCase().includes("bowler")
+    ).length;
+    if (bowlers < 6 && (player.role || "").toLowerCase().includes("bowling")) {
+      multiplier = 1.45;
+      reason = "Bowling all-rounder balances attack";
+    }
+  }
+  return { multiplier, reason };
+}
+
+function evaluateBowlerValue(team, player) {
+  if (!(player.role || "").toLowerCase().includes("bowler")) {
+    return { multiplier: 1, reason: "" };
+  }
+  const bowlers = (team.squad || []).filter((p) =>
+    (p.role || "").toLowerCase().includes("bowler")
+  ).length;
+  let multiplier = 1;
+  let reason = "";
+  if (bowlers < 7) {
+    multiplier = 1.35;
+    reason = "Need core bowling unit";
+  } else if (bowlers >= 8 && (player.rating || 0) < 8) {
+    multiplier = 0.75;
+    reason = "Average bowler surplus";
+  }
+  return { multiplier, reason };
+}
+
+function evaluateBatterValue(team, player) {
+  if (!(player.role || "").toLowerCase().includes("bat")) {
+    return { multiplier: 1, reason: "" };
+  }
+  const batters = (team.squad || []).filter((p) =>
+    (p.role || "").toLowerCase().includes("bat")
+  ).length;
+  let multiplier = 1;
+  let reason = "";
+  if (batters <= 5) {
+    multiplier = 1.2;
+    reason = "Need batting core";
+  } else if (batters >= 7 && (player.rating || 0) < 7.5) {
+    multiplier = 0.75;
+    reason = "Depth overkill";
+  }
+  if ((player.role || "").toLowerCase().includes("top")) {
+    const openers = (team.squad || []).filter((p) =>
+      (p.role || "").toLowerCase().includes("top")
+    ).length;
+    if (openers < 2) {
+      multiplier *= 1.15;
+      reason = "Top-order anchor needed";
+    }
+  }
+  if ((player.role || "").toLowerCase().includes("finisher")) {
+    const finishers = (team.squad || []).filter((p) =>
+      (p.role || "").toLowerCase().includes("finisher")
+    ).length;
+    if (finishers < 2) {
+      multiplier *= 1.15;
+      reason = "Finisher gap";
+    }
+  }
+  return { multiplier, reason };
+}
+
+function evaluateRoleSpecificMultiplier(team, player) {
+  const results = [];
+  const bucket = getRoleBucket(player.role, "auction");
+  if (bucket === "WK") results.push(evaluateKeeperValue(team, player));
+  if (bucket === "AR") results.push(evaluateAllrounderValue(team, player));
+  if (bucket === "BOWL") results.push(evaluateBowlerValue(team, player));
+  if (bucket === "BAT") results.push(evaluateBatterValue(team, player));
+  const multiplier = results.reduce((acc, r) => acc * (r?.multiplier || 1), 1);
+  return { multiplier, notes: results.map((r) => r.reason).filter(Boolean) };
+}
+
+function checkSynergyBonus(team, player) {
+  const squad = team.squad || [];
+  const traits = getPlayerTraitList(player);
+  let bonus = 0;
+  const reasons = [];
+  const hasTrait = (p, trait) => getPlayerTraitList(p).includes(trait);
+
+  if (traits.includes("left_arm")) {
+    if (squad.some((p) => hasTrait(p, "wrist_spin"))) {
+      bonus += 0.4;
+      reasons.push("Variation combo (left-arm + wrist spin)");
+    }
+  }
+  if (traits.includes("wrist_spin")) {
+    if (squad.some((p) => hasTrait(p, "left_arm"))) {
+      bonus += 0.4;
+      reasons.push("Variation combo (wrist spin + left-arm pace)");
+    }
+  }
+  if ((player.role || "").toLowerCase().includes("anchor")) {
+    if (squad.some((p) => (p.role || "").toLowerCase().includes("finisher"))) {
+      bonus += 0.3;
+      reasons.push("Anchor + finisher balance");
+    }
+  }
+  if ((player.role || "").toLowerCase().includes("finisher")) {
+    if (squad.some((p) => (p.role || "").toLowerCase().includes("anchor"))) {
+      bonus += 0.3;
+      reasons.push("Finisher complements anchor");
+    }
+  }
+  const deathCount = squad.filter((p) =>
+    getPlayerTraitList(p).includes("death_pace")
+  ).length;
+  if (getPlayerTraitList(player).includes("death_pace")) {
+    if (deathCount >= 2) {
+      bonus += 0.35;
+      reasons.push("Completes death bowling battery");
+    }
+  }
+  const domesticBowlers = squad.filter(
+    (p) => !p.isOverseas && (p.role || "").toLowerCase().includes("bowler")
+  ).length;
+  if (
+    player.isOverseas &&
+    (player.role || "").toLowerCase().includes("bat") &&
+    domesticBowlers >= 5
+  ) {
+    bonus += 0.3;
+    reasons.push("Overseas batting star on domestic bowling core");
+  }
+  const qualitySpinners = squad.filter(
+    (p) =>
+      (p.role || "").toLowerCase().includes("spin") &&
+      (p.rating || 0) >= 8
+  ).length;
+  if (
+    (player.role || "").toLowerCase().includes("spin") &&
+    (player.rating || 0) >= 8 &&
+    qualitySpinners >= 1
+  ) {
+    bonus += 0.35;
+    reasons.push("Spin twins threat");
+  }
+  return { bonus, reasons };
+}
+
+function calculatePanicLevel(team, stage, needInfo) {
+  const requiredSlots =
+    team.squad.length >= MIN_SQUAD_SIZE
+      ? Math.max(1, MAX_SQUAD_SIZE - team.squad.length)
+      : Math.max(1, MIN_SQUAD_SIZE - team.squad.length);
+  const moneyPerSlot = team.purse / requiredSlots;
+  let panic = 0;
+  if (moneyPerSlot < 1 && requiredSlots >= 4) panic += 0.8;
+  const keepers = (team.squad || []).filter((p) =>
+    (p.role || "").toLowerCase().includes("keeper")
+  ).length;
+  if (keepers === 0 && stage !== "early") panic += stage === "late" ? 1 : 0.6;
+  const bowlers = (team.squad || []).filter((p) =>
+    (p.role || "").toLowerCase().includes("bowler")
+  ).length;
+  if (bowlers < 4 && stage === "late") panic += 0.6;
+  if (team.overseasBought <= 2 && stage === "late") panic += 0.4;
+  const severeNeed = Object.values(needInfo.signals).some((sev) => sev > 0.8);
+  if (severeNeed) panic += 0.5;
+  const history = ensureAuctionMemory(team).bidHistory;
+  if (history.slice(0, 4).every((h) => h.result === "loss") && history.length >= 4) {
+    panic += 0.5;
+  }
+  const totalPlayers =
+    auctionPlayers && auctionPlayers.length ? auctionPlayers.length : 0;
+  if (totalPlayers > 0) {
+    const auctionProgress = Math.min(1, currentPlayerIndex / totalPlayers);
+    if (auctionProgress > 0.8) {
+      const minSlotsNeeded = Math.max(
+        1,
+        MIN_SQUAD_SIZE - (team.squad ? team.squad.length : 0)
+      );
+      const pursePerSlotLate = team.purse / Math.max(1, minSlotsNeeded);
+      if (minSlotsNeeded >= 3 && pursePerSlotLate < 1.5) {
+        const desperation = Math.max(0, (1.5 - pursePerSlotLate) / 1.5);
+        panic += desperation * 1.5 * Math.max(0, auctionProgress - 0.8) * 5;
+      }
+      if (auctionProgress > 0.85 && keepers === 0) {
+        panic += 1.5;
+      }
+      if (auctionProgress > 0.9 && bowlers < 5) {
+        panic += 1;
+      }
+    }
+  }
+  return Math.min(3, panic);
+}
+
+function applyFranchiseQuirks(team, player) {
+  let multiplier = 1;
+  const name = team.id;
+  const rating = player.rating || 0;
+  const isExperienced = rating >= 7.5;
+  const roleText = (player.role || "").toLowerCase();
+  if (name === "CSK") {
+    if (rating >= 8 || isExperienced) multiplier *= 1.1;
+    if (rating <= 6.5) multiplier *= 0.9;
+  }
+  if (name === "MI") {
+    multiplier *= 1.05;
+  }
+  if (name === "RCB") {
+    if (roleText.includes("bat")) multiplier *= 1.15;
+  }
+  if (name === "PBKS") {
+    multiplier *= 0.95; // value hunters
+    if (Math.random() < 0.08) multiplier *= 1.1;
+  }
+  if (name === "KKR") {
+    if (roleText.includes("wrist") || roleText.includes("leg")) multiplier *= 1.2;
+  }
+  return multiplier;
+}
+
+function evaluateOpportunityCost(player) {
+  const auctionPhase = stage;
+  const bucket = getRoleBucket(player.role, "auction");
+  let alternativeScore = 0;
+  let alternativeCount = 0;
+
+  PLAYERS_2026.forEach((p) => {
+    if (p.id === player.id) return;
+    if (soldIds.has(p.id)) return;
+    if (unsoldIds.has(p.id) && auctionPhase === "main") return;
+    if (getRoleBucket(p.role, "auction") !== bucket) return;
+    if (p.isOverseas !== player.isOverseas) return;
+
+    const ratingGap = Math.abs((p.rating || 0) - (player.rating || 0));
+    const similarity = Math.max(0, 1 - ratingGap / 3);
+    alternativeScore += similarity;
+    alternativeCount += 1;
+  });
+
+  let multiplier = 1;
+  if (alternativeScore >= 3) {
+    multiplier = 0.85;
+  } else if (alternativeScore <= 0.5 && (player.rating || 0) >= 8) {
+    multiplier = 1.3;
+  } else if (alternativeCount <= 1) {
+    multiplier = 1.2;
+  }
+
+  return { multiplier, alternativeScore, alternativeCount };
+}
+
+function detectBiddingWar(team, player) {
+  const memory = ensureAuctionMemory(team);
+  const war = memory.currentWar?.[player.id];
+  if (!war || !war.count) return 0;
+  return Math.min(1, war.count / 4);
+}
+
+function clearWarTrackingForPlayer(playerId) {
+  if (!playerId || !teamsState) return;
+  teamsState.forEach((team) => {
+    const memory = ensureAuctionMemory(team);
+    if (memory.currentWar && memory.currentWar[playerId]) {
+      delete memory.currentWar[playerId];
+    }
+  });
+}
+
+function wouldMakePlayingXI(team, player) {
+  const squad = team.squad || [];
+  if (squad.length < 14) return 1;
+  const overseasInXI = squad.filter((p) => p.isOverseas).length;
+  const projectedOverseas = overseasInXI + (player.isOverseas ? 1 : 0);
+  const keepers =
+    squad.filter((p) => (p.role || "").toLowerCase().includes("keeper"))
+      .length + ((player.role || "").toLowerCase().includes("keeper") ? 1 : 0);
+  const bowlers =
+    squad.filter((p) => (p.role || "").toLowerCase().includes("bowler"))
+      .length + ((player.role || "").toLowerCase().includes("bowler") ? 1 : 0);
+  if (projectedOverseas > 7 && player.isOverseas) return 0.5;
+  if (keepers > 3 && (player.role || "").toLowerCase().includes("keeper"))
+    return 0.4;
+  if (bowlers > 9 && (player.role || "").toLowerCase().includes("bowler"))
+    return 0.6;
+  return 1;
+}
+
+function updateAuctionMemoryOnSale(winner, player, price) {
+  const bucket = getRoleBucket(player.role, "auction");
+  updatePriceInflationForAll(bucket, player.basePrice, price);
+  updateRivalSpendingForAll(winner.id, price);
+
+  teamsState.forEach((team) => {
+    const memory = ensureAuctionMemory(team);
+    const lastIntent = memory.lastIntent;
+    const hadIntent = lastIntent && lastIntent.playerId === player.id;
+    const hadBluffIntent = hadIntent && lastIntent.desire === "bluff";
+    const bluffTargetId = hadBluffIntent ? lastIntent.targetTeamId : null;
+    if (team.id === winner.id) {
+      recordBidHistory(team, {
+        playerId: player.id,
+        name: player.name,
+        result: "win",
+        price
+      });
+      memory.lastRoleLosses[bucket] = 0;
+      memory.pendingAction = null;
+      memory.pendingDelay = 0;
+      memory.currentWar && delete memory.currentWar[player.id];
+    } else if (hadIntent) {
+      recordMissedTarget(team, {
+        name: player.name,
+        price,
+        winner: winner.name,
+        winnerIsHuman: winner.isHuman
+      });
+      recordBidHistory(team, {
+        playerId: player.id,
+        name: player.name,
+        result: "loss",
+        price
+      });
+      memory.lastRoleLosses[bucket] =
+        (memory.lastRoleLosses[bucket] || 0) + 1;
+      const blueprint = getTeamConfig(team).blueprint;
+      if ((blueprint.rivalries || []).includes(winner.id)) {
+        const utility = computePlayerUtility(team, player);
+        adjustRivalryHeat(
+          team,
+          winner.id,
+          utility >= 8.5 ? 0.5 : 0.3
+        );
+        memory.recentRivalConflicts.unshift({
+          rivalId: winner.id,
+          playerId: player.id,
+          result: "loss",
+          utility,
+          rivalIsHuman: winner.isHuman,
+          timestamp: Date.now()
+        });
+        if (memory.recentRivalConflicts.length > 5)
+          memory.recentRivalConflicts.length = 5;
+      }
+      memory.currentWar && delete memory.currentWar[player.id];
+    } else {
+      memory.lastRoleLosses[bucket] = 0;
+      memory.currentWar && delete memory.currentWar[player.id];
+    }
+    if (memory.pendingAction && memory.pendingAction.playerId === player.id) {
+      memory.pendingAction = null;
+      memory.pendingDelay = 0;
+    }
+    if (hadBluffIntent) {
+      const winnerWasTarget = bluffTargetId && winner.id === bluffTargetId;
+      const selfWon = team.id === winner.id;
+      const stats = memory.bluffStats || (memory.bluffStats = {});
+      stats.attempts = (stats.attempts || 0) + 1;
+      if (selfWon) {
+        stats.backfires = (stats.backfires || 0) + 1;
+        pushLog(`💸 ${team.name}'s bluff backfired – stuck with ${player.name}!`);
+      } else if (winnerWasTarget) {
+        stats.successes = (stats.successes || 0) + 1;
+        const overpay = price - player.basePrice;
+        if (overpay > 2) {
+          pushLog(
+            `🎭 ${team.name}'s bluff worked – ${winner.name} overpaid by ₹${overpay.toFixed(
+              2
+            )} cr!`
+          );
+        }
+        adjustRivalryHeat(team, winner.id, -0.15);
+      }
+    }
+    memory.activeBluff = null;
+    if (team.id === winner.id) {
+      memory.consecutiveLosses = 0;
+      memory.tiltLevel = 0;
+      memory.lastLossTimestamp = null;
+    } else if (hadIntent && lastIntent.desire !== "bluff") {
+      memory.consecutiveLosses = (memory.consecutiveLosses || 0) + 1;
+      memory.lastLossTimestamp = Date.now();
+      memory.tiltLevel = calculateTilt(team);
+    }
+    memory.lastIntent = null;
+    resetHumanPauseSignal(memory, player.id);
+  });
+}
+
+function evaluateRivalConfidence(team) {
+  const blueprint = getTeamConfig(team).blueprint;
+  const rivals = blueprint.rivalries || [];
+  let boost = 0;
+  rivals.forEach((rid) => {
+    const rival = teamsState.find((t) => t.id === rid);
+    if (!rival) return;
+    const initial = getInitialPurseForTeam(rid) || rival.initialPurse || 0;
+    if (!initial) return;
+    const spent = initial - rival.purse;
+    if (spent / initial >= 0.6) boost = Math.max(boost, 0.15);
+  });
+  return boost;
+}
+
+function evaluateUnderdogAggro(team) {
+  const slotsNeeded = Math.max(
+    1,
+    MIN_SQUAD_SIZE - (team.squad ? team.squad.length : 0)
+  );
+  const pursePerSlot = team.purse / slotsNeeded;
+  const threshold =
+    AI_TUNING.underdog.pursePerSlotThreshold || 1.5;
+  if (pursePerSlot >= threshold) return 0;
+  const pressure = Math.min(1, (threshold - pursePerSlot) / threshold);
+  if (pressure <= 0) return 0;
+  return pressure * AI_TUNING.underdog.aggressionBonus;
+}
+
+function detectRivalryOpportunity(team, player, currentLeader) {
+  if (!currentLeader || currentLeader.id === team.id) return 0;
+  let maxRivalryHeat = 0;
+  teamsState.forEach((rival) => {
+    if (rival.id === team.id || rival.id === currentLeader.id) return;
+    const rivalMemory = ensureAuctionMemory(rival);
+    const heat =
+      (rivalMemory.rivalryHeat && rivalMemory.rivalryHeat[currentLeader.id]) ||
+      0;
+    if (heat > maxRivalryHeat) maxRivalryHeat = heat;
+  });
+  if (maxRivalryHeat <= 0.6) return 0;
+  const leaderInitial =
+    getInitialPurseForTeam(currentLeader.id) ||
+    currentLeader.initialPurse ||
+    0;
+  if (!leaderInitial) return 0;
+  const leaderSpentRatio =
+    (leaderInitial - currentLeader.purse) / leaderInitial;
+  if (leaderSpentRatio >= 0.4) return 0;
+  return 0.3 * maxRivalryHeat;
+}
+
+function evaluateBluffContinuation(team, player, nextBid, bluff) {
+  const memory = ensureAuctionMemory(team);
+  if (!bluff || !bluff.cap) return null;
+  const riskRatio = bluff.cap === 0 ? 1 : nextBid / bluff.cap;
+  const stats = memory.bluffStats || {};
+  const backfireRate =
+    stats.attempts > 0 ? stats.backfires / stats.attempts : 0;
+  let chickenOutChance = 0;
+  if (riskRatio > 0.9) {
+    chickenOutChance = 0.7 + backfireRate * 0.2;
+  } else if (riskRatio > 0.7) {
+    chickenOutChance = 0.4 + backfireRate * 0.15;
+  } else if (riskRatio > 0.5) {
+    chickenOutChance = 0.15 + backfireRate * 0.1;
+  } else {
+    chickenOutChance = backfireRate * 0.05;
+  }
+  chickenOutChance = Math.min(0.95, Math.max(0, chickenOutChance));
+  if (Math.random() < chickenOutChance) {
+    memory.activeBluff = null;
+    memory.lastIntent = null;
+    return null;
+  }
+  const safeRatio = Math.min(Math.max(riskRatio, 0), 1);
+  return {
+    mode: "bluff",
+    priorityScore: 5 + (1 - safeRatio) * 3
+  };
+}
+
+function evaluateBluffOpportunity(team, player, nextBid, utility) {
+  const memory = ensureAuctionMemory(team);
+  const { blueprint } = getTeamConfig(team);
+  const squadSize = team.squad ? team.squad.length : 0;
+  const minPurse = AI_TUNING.bidding.minBluffPurse || 8;
+  if (team.purse < minPurse) return null;
+  if (squadSize > MAX_SQUAD_SIZE - 4) return null;
+  if (utility >= 7.5) return null;
+  if (!currentBidTeamId) return null;
+  const currentLeader = getTeamById(currentBidTeamId);
+  if (!currentLeader || currentLeader.id === team.id) return null;
+
+  const stage = getAuctionStage();
+  const leaderFit = evaluatePlayerFit(currentLeader, player);
+  const leaderUtility = computePlayerUtility(currentLeader, player, leaderFit);
+  const leaderMax = aiMaxPriceFor(
+    currentLeader,
+    player,
+    stage,
+    leaderUtility,
+    leaderFit
+  );
+  if (leaderMax <= nextBid) return null;
+
+  let triggerScore = 0;
+  const rivalryHeat = getRivalryHeat(team, currentLeader.id);
+  if ((blueprint.rivalries || []).includes(currentLeader.id)) {
+    triggerScore += 0.4 + rivalryHeat * 0.3;
+  }
+
+  const leaderInitial = getInitialPurseForTeam(currentLeader.id) || 0;
+  if (leaderInitial > 0) {
+    const leaderSpentRatio =
+      (leaderInitial - currentLeader.purse) / leaderInitial;
+    if (leaderSpentRatio < 0.6) {
+      triggerScore += 0.3;
+    }
+  }
+
+  const turfTraits = TEAM_TURF_TRAITS[team.id] || [];
+  const playerTraits = getPlayerTraitList(player);
+  if (turfTraits.some((trait) => playerTraits.includes(trait))) {
+    triggerScore += 0.25;
+  }
+
+  const aggressiveFranchise = ["MI", "RCB", "KKR"].includes(team.id);
+  if (aggressiveFranchise && player.bracket === "marquee") {
+    triggerScore += 0.2;
+  }
+
+  const stats = memory.bluffStats || {};
+  const backfireRate =
+    stats.attempts > 0 ? stats.backfires / stats.attempts : 0;
+  triggerScore -= backfireRate * 0.4;
+
+  if (triggerScore < 0.5) return null;
+
+  let cap = leaderMax * 0.7;
+  cap *= 1 + rivalryHeat * 0.15;
+  if (Math.random() < 0.15) {
+    cap += bidStep * randomInt(1, 2);
+  }
+  cap = Math.min(cap, team.purse * 0.3);
+  if (cap < nextBid + bidStep * 2) return null;
+
+  return {
+    cap,
+    targetTeamId: currentLeader.id,
+    priorityScore: utility * 0.2 + triggerScore * 3
+  };
+}
+
+function getRemainingQualityOverseasCount() {
+  if (remainingOverseasCountCache.version === poolStateVersion) {
+    return remainingOverseasCountCache.count;
+  }
+  const count = PLAYERS_2026.filter((p) => {
+    if (!p.isOverseas) return false;
+    if (soldIds.has(p.id)) return false;
+    return (p.rating || 0) >= (AI_TUNING.overseas.qualityRatingFloor || 7);
+  }).length;
+  remainingOverseasCountCache = {
+    version: poolStateVersion,
+    count
+  };
+  return count;
+}
+
+function getOverseasUrgency(team, player, stageContext) {
+  if (!player.isOverseas) return 0;
+  const preferred = Math.min(
+    AI_TUNING.overseas.maxSlots,
+    AI_TUNING.overseas.preferCount
+  );
+  const need = Math.max(0, preferred - (team.overseasBought || 0));
+  if (need <= 0) return 0;
+
+  const remainingOS = getRemainingQualityOverseasCount();
+  const bufferMultiplier = AI_TUNING.overseas.bufferMultiplier || 3;
+  const targetPool = Math.max(need * bufferMultiplier, 1);
+  const scarcity = 1 - Math.min(1, remainingOS / targetPool);
+  if (scarcity <= 0) return 0;
+  return scarcity * AI_TUNING.overseas.aggressionBonus;
+}
+
+function evaluatePlayerFit(team, player, blueprintOverride) {
+  const blueprint =
+    blueprintOverride || TEAM_BLUEPRINTS[team.id] || DEFAULT_BLUEPRINT;
+  const needInfo = computeNeedSignals(team, blueprint);
+  const traits = getPlayerTraitList(player);
+  let matchScore = 0;
+
+  traits.forEach((trait) => {
+    const severity = needInfo.signals[trait];
+    if (!severity) return;
+    matchScore += severity;
+  });
+
+  let tier = "flyer";
+  if (matchScore >= 1.2) tier = "core";
+  else if (matchScore >= 0.5) tier = "specialist";
+
+  return {
+    matchScore,
+    tier,
+    traits,
+    needInfo,
+    blueprint
+  };
+}
+
+function getLoyaltyBonus(team, player, fitInfo) {
+  const playerName = stripNameTags(player.name);
+  if (PLAYER_RELEASE_MAP[playerName] !== team.id) return 0;
+  const rating = player.rating || 0;
+  const matchScore = fitInfo.matchScore || 0;
+  if (rating < 7 && matchScore < 0.5) return 0;
+  const base = LOYALTY_STRENGTH[team.id]?.[playerName] || 0.3;
+  if (rating >= 8 || matchScore >= 0.8) return base;
+  return base * 0.5;
+}
+
+function getRivalryHeat(team, rivalId) {
+  if (!rivalId) return 0;
+  const memory = ensureAuctionMemory(team);
+  return memory.rivalryHeat?.[rivalId] || 0;
+}
+
+function adjustRivalryHeat(team, rivalId, delta) {
+  if (!rivalId) return;
+  const memory = ensureAuctionMemory(team);
+  memory.rivalryHeat = memory.rivalryHeat || {};
+  const current = memory.rivalryHeat[rivalId] || 0;
+  memory.rivalryHeat[rivalId] = Math.max(0, current + delta);
+}
+
+function calculateFOMO(team, player) {
+  if (!teamsState || !player) return 0;
+  const interested = new Set();
+  teamsState.forEach((t) => {
+    const mem = ensureAuctionMemory(t);
+    const intent = mem.lastIntent;
+    if (
+      intent &&
+      intent.playerId === player.id &&
+      intent.desire !== "bluff"
+    ) {
+      interested.add(t.id);
+    }
+  });
+  const bidderCount = interested.size;
+  if (bidderCount < 3) return 0;
+  recordBiddingWar(player);
+  const leaderFranchises = ["MI", "CSK", "RCB", "KKR"];
+  const isFollower = !leaderFranchises.includes(team.id);
+  const baseFomo = (bidderCount - 2) * 0.3;
+  return isFollower ? baseFomo * 1.5 : baseFomo;
+}
+
+function recordBiddingWar(player) {
+  if (!teamsState || !player) return;
+  const entry = { playerId: player.id, timestamp: Date.now() };
+  teamsState.forEach((team) => {
+    const memory = ensureAuctionMemory(team);
+    memory.fomoTriggers = memory.fomoTriggers || [];
+    memory.fomoTriggers.unshift(entry);
+    if (memory.fomoTriggers.length > 20) {
+      memory.fomoTriggers.length = 20;
+    }
+  });
+}
+
+function calculateTilt(team) {
+  const memory = ensureAuctionMemory(team);
+  const now = Date.now();
+  if (memory.lastLossTimestamp && now - memory.lastLossTimestamp > 300000) {
+    memory.tiltLevel = 0;
+    memory.consecutiveLosses = 0;
+    memory.lastLossTimestamp = null;
+  }
+  const losses = memory.consecutiveLosses || 0;
+  let tilt = 0;
+  if (losses >= 5) tilt = 3;
+  else if (losses >= 3) tilt = 2;
+  else if (losses >= 2) tilt = 1;
+  memory.tiltLevel = tilt;
+  return tilt;
+}
+
+function isHumanLikelyBluffing(humanTeam, player, currentBid) {
+  if (!humanTeam) {
+    return { likelyBluff: false, confidence: 0, reasoning: "" };
+  }
+  const stage = getAuctionStage();
+  const fitInfo = evaluatePlayerFit(humanTeam, player);
+  const humanUtility = computePlayerUtility(humanTeam, player, fitInfo);
+  const humanMaxEstimate = aiMaxPriceFor(
+    humanTeam,
+    player,
+    stage,
+    humanUtility,
+    fitInfo
+  );
+  const bucket = getRoleBucket(player.role, "auction");
+  const roleCounts = computeRoleCounts(humanTeam);
+  let bluffScore = 0;
+  if (fitInfo.tier === "flyer" && humanUtility < 7) bluffScore += 0.3;
+  if (currentBid > humanMaxEstimate * 0.85) bluffScore += 0.4;
+  if (humanTeam.purse < 10 && currentBid > humanTeam.purse * 0.4)
+    bluffScore += 0.3;
+  if (roleCounts[bucket] >= (TARGET_COMPOSITION[bucket] || 0))
+    bluffScore += 0.3;
+  return {
+    likelyBluff: bluffScore >= 0.6,
+    confidence: Math.min(1, bluffScore),
+    reasoning: `Utility ${humanUtility.toFixed(
+      1
+    )}, roleCount ${roleCounts[bucket] || 0}, est max ₹${humanMaxEstimate.toFixed(
+      2
+    )}`
+  };
+}
+
+function resetHumanPauseSignal(memory, playerId) {
+  if (
+    memory.humanPauseSignals &&
+    memory.humanPauseSignals.playerId === playerId
+  ) {
+    memory.humanPauseSignals = {
+      playerId: null,
+      pausedAt: null,
+      pausingTeamId: null,
+      pauseDuration: 0,
+      stillPaused: false
+    };
+  }
+}
+
+function initializePlanState(purse, blueprint, retentionSummary) {
+  let coreSecured = 0;
+  if (retentionSummary && retentionSummary.traits) {
+    const topNeed = blueprint.desiredTraits?.top || 0;
+    const finisherNeed = blueprint.desiredTraits?.finisher || 0;
+    if ((retentionSummary.traits.top || 0) >= Math.max(1, Math.ceil(topNeed * 0.6))) {
+      coreSecured += 1;
+    }
+    if (
+      (retentionSummary.traits.finisher || 0) >=
+      Math.max(1, Math.ceil(finisherNeed * 0.5))
+    ) {
+      coreSecured += 1;
+    }
+  }
+  return {
+    earlyBudget: purse * (blueprint.spendingCurve.early || 0.5),
+    midBudget: purse * (blueprint.spendingCurve.mid || 0.4),
+    lateBudget: purse * (blueprint.spendingCurve.late || 0.3),
+    initialPurse: purse,
+    retentionSummary,
+    coreSecured
+  };
+}
+
+function updatePlanOnAcquisition(team, player) {
+  if (!team || !team.planState) return;
+  const fit = evaluatePlayerFit(team, player, team.blueprint);
+  if (fit.tier === "core") {
+    team.planState.coreSecured = (team.planState.coreSecured || 0) + 1;
+  }
+  team.planState.lastAcquiredTier = fit.tier;
+  team.planState.lastMatchScore = fit.matchScore;
+}
+
+// helper to get static config for a team
+function getTeamConfig(team) {
+  const blueprint =
+    (team && team.blueprint) ||
+    TEAM_BLUEPRINTS[(team && team.id) || ""] ||
+    DEFAULT_BLUEPRINT;
+  return {
+    homeProfile: TEAM_HOME_PROFILES[team.id] || DEFAULT_HOME_PROFILE,
+    strategy: TEAM_STRATEGY_PRESETS[team.id] || DEFAULT_STRATEGY,
+    blueprint
+  };
+}
+
+// recompute role counts from current squad
+function computeRoleCounts(team) {
+  const counts = { BAT: 0, WK: 0, AR: 0, BOWL: 0 };
+  if (!team.squad) return counts;
+  team.squad.forEach((p) => {
+    const bucket = getRoleBucket(p.role, p.from);
+    if (counts[bucket] != null) counts[bucket] += 1;
+  });
+  return counts;
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function getDisplayBattingStyle(player) {
+  return (
+    player.battingStyle ||
+    player.battingHand ||
+    player.batting ||
+    "—"
+  );
+}
+
+function getDisplayBowlingStyle(player) {
+  return (
+    player.bowlingStyle ||
+    player.bowling ||
+    "—"
+  );
+}
+
+function shouldShowBowlingStyle(player) {
+  const role = (player.role || "").toLowerCase();
+  return !role.includes("batter") && !role.includes("wicket");
+}
+
+// how scarce is this type of player in the remaining pool (0..1)
+function computeScarcityScore(player) {
+  const cached = SCARCITY_CACHE.get(player.id);
+  if (cached && cached.version === poolStateVersion) {
+    return cached.value;
+  }
+  const bucket = getRoleBucket(player.role, "auction");
+  let similar = 0;
+  let total = 0;
+
+  PLAYERS_2026.forEach((p) => {
+    if (soldIds.has(p.id)) return;
+    if (unsoldIds.has(p.id)) return; // already gone through main round
+    const b = getRoleBucket(p.role, "auction");
+    if (b === bucket) {
+      total += 1;
+      // "similar" = close bracket & OS/Indian
+      if (p.isOverseas === player.isOverseas && Math.abs(p.rating - player.rating) <= 1.5) {
+        similar += 1;
+      }
+    }
+  });
+
+  if (total === 0) return 1; // extremely scarce
+  const scarcity = 1 - similar / Math.max(total, 1);
+  const value = Math.min(1, Math.max(0, scarcity));
+  SCARCITY_CACHE.set(player.id, { version: poolStateVersion, value });
+  return value;
+}
+
+function getTierBonus(tier) {
+  if (tier === "core") return 1.6;
+  if (tier === "specialist") return 0.8;
+  return 0;
+}
+
+function getPreferenceBonus(strategy, player, bucket) {
+  let bonus = 0;
+  if (player.bracket === "marquee") bonus += strategy.starBias || 0;
+  if (bucket === "AR") bonus += strategy.allrounderBias || 0;
+  bonus += player.isOverseas ? strategy.overseasBias || 0 : strategy.domesticBias || 0;
+  return bonus;
+}
+
+function evaluateLoyalty(team, player, context) {
+  return context.loyaltyBonus || 0;
+}
+
+function evaluateSynergy(team, player, context) {
+  return context.synergyBonus || 0;
+}
+
+function getUnderdogBonus(team) {
+  return evaluateUnderdogAggro(team) || 0;
+}
+
+function buildEvaluationContext(team, player, fitInfoOverride, teamConfig) {
+  const { homeProfile, strategy, blueprint } = teamConfig;
+  const stage = getAuctionStage();
+  const stagePersona = getStagePersonality(team, stage);
+  const fitInfo = fitInfoOverride || evaluatePlayerFit(team, player, blueprint);
+  const playerTraits = getPlayerTraits(player);
+  const squadNeeds = analyzeSquadStructure(team);
+  const bucket = getRoleBucket(player.role, "auction");
+  const roleCounts = computeRoleCounts(team);
+  const target = TARGET_COMPOSITION[bucket] || 0;
+  let needRatio = 0;
+  if (target > 0) {
+    needRatio = (target - (roleCounts[bucket] || 0)) / target;
+    needRatio = clamp(needRatio, -1, 1);
+  }
+  const roleFit = {
+    bucket,
+    needRatio,
+    needPressure: needRatio * 2 * stagePersona.aggression
+  };
+
+  let groundBonus = 0;
+  const roleText = (player.role || "").toLowerCase();
+  if (bucket === "BOWL") {
+    groundBonus += roleText.includes("spin")
+      ? homeProfile.spinBias
+      : homeProfile.paceBias;
+  }
+  if (bucket === "BAT" || bucket === "WK" || player.bracket === "marquee") {
+    groundBonus += homeProfile.battingBias;
+  }
+
+  const scarcity = computeScarcityScore(player);
+  const roleMultiplier = evaluateRoleSpecificMultiplier(team, player);
+  const synergy = checkSynergyBonus(team, player);
+  const loyaltyBonus = getLoyaltyBonus(team, player, fitInfo);
+  const panicLevel = calculatePanicLevel(team, stage, fitInfo.needInfo);
+  const panicMult = 1 + panicLevel * AI_TUNING.utility.panicMultiplier;
+  const playingXiMult = wouldMakePlayingXI(team, player);
+  const quirkMult = applyFranchiseQuirks(team, player);
+  const memory = ensureAuctionMemory(team);
+  memory.panicMode = panicLevel >= 1.5;
+
+  return {
+    strategy,
+    homeProfile,
+    blueprint,
+    teamId: team.id,
+    stage,
+    stagePersona,
+    fitInfo,
+    playerTraits,
+    squadNeeds,
+    playerRef: player,
+    roleFit,
+    groundBonus: groundBonus * (strategy.groundWeight || 1),
+    scarcity,
+    loyaltyBonus,
+    synergyBonus: synergy.bonus,
+    panicLevel,
+    multipliers: {
+      role: roleMultiplier.multiplier,
+      panic: panicMult,
+      xi: playingXiMult,
+      quirk: quirkMult
+    },
+    preferenceBonus: getPreferenceBonus(strategy, player, bucket),
+    overseasUrgency: getOverseasUrgency(team, player, stage),
+    underdogBonus: getUnderdogBonus(team),
+    memory
+  };
+}
+
+function computeBaseUtility(player, context) {
+  const { strategy, roleFit, scarcity, groundBonus } = context;
+  return (
+    (player.rating ?? 6.5) +
+    roleFit.needPressure * strategy.needWeight +
+    scarcity * (strategy.scarcityWeight || 1) * 2 +
+    groundBonus
+  );
+}
+
+function computeTeamSpecificBonus(team, player, context) {
+  const { fitInfo, stagePersona } = context;
+  const starPersona = (stagePersona.starBias - 1) * AI_TUNING.utility.starBiasScale;
+  return (
+    (fitInfo.matchScore || 0) * 1.5 +
+    evaluateLoyalty(team, player, context) +
+    evaluateSynergy(team, player, context) +
+    getTierBonus(fitInfo.tier) +
+    context.preferenceBonus +
+    starPersona
+  );
+}
+
+function computeUrgencyBonus(team, player, context) {
+  const { fitInfo, panicLevel, overseasUrgency, underdogBonus } = context;
+  return (
+    (fitInfo.needInfo?.maxSeverity || 0) * 0.6 +
+    panicLevel * 0.25 +
+    overseasUrgency +
+    underdogBonus
+  );
+}
+
+function computeUtilityMultipliers(team, player, context) {
+  const { multipliers } = context;
+  const safeRole = clamp(multipliers.role || 1, 0.3, 2.5);
+  const safePanic = clamp(multipliers.panic || 1, 0.85, 1.8);
+  const safeXI = clamp(multipliers.xi || 1, 0.4, 1.0);
+  const safeQuirk = clamp(multipliers.quirk || 1, 0.9, 1.2);
+  const squadMult = getSquadNeedMultiplier(
+    context.playerTraits,
+    context.squadNeeds
+  );
+  const homeMult = getHomeGroundMultiplier(
+    context.teamId,
+    context.playerTraits,
+    context.playerRef
+  );
+  const unicornMult = getUnicornMultiplier(
+    context.playerRef,
+    context.playerTraits
+  );
+  return {
+    components: {
+      role: safeRole,
+      panic: safePanic,
+      xi: safeXI,
+      quirk: safeQuirk,
+      squad: Number(squadMult.toFixed(2)),
+      home: Number(homeMult.toFixed(2)),
+      unicorn: Number(unicornMult.toFixed(2))
+    },
+    value:
+      safeRole *
+      safePanic *
+      safeXI *
+      safeQuirk *
+      squadMult *
+      homeMult *
+      unicornMult
+  };
+}
+
+function clampUtility(rawUtility, playerRating = 6.5) {
+  if (rawUtility > 12) {
+    const excess = rawUtility - 12;
+    rawUtility = 12 + Math.log1p(excess) * 2;
+  }
+  const floor = playerRating * 0.5;
+  const ceiling = playerRating * 3;
+  return clamp(rawUtility, floor, ceiling);
+}
+
+function recordUtilitySample(value) {
+  if (!Number.isFinite(value)) return;
+  UTILITY_SAMPLES.push(value);
+  if (UTILITY_SAMPLES.length > MAX_UTILITY_SAMPLES) {
+    UTILITY_SAMPLES.shift();
+  }
+  utilitySamplesDirty = true;
+}
+
+function getUtilityPercentile(value) {
+  if (UTILITY_SAMPLES.length < AI_TUNING.desire.minSamples) return null;
+  if (utilitySamplesDirty) {
+    utilitySamplesSorted = [...UTILITY_SAMPLES].sort((a, b) => a - b);
+    utilitySamplesDirty = false;
+  }
+  let lo = 0;
+  let hi = utilitySamplesSorted.length;
+  while (lo < hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    if (utilitySamplesSorted[mid] <= value) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo / utilitySamplesSorted.length;
+}
+
+function recordUtilityDebug(team, player, contributions, multipliers, total, fitInfo) {
+  if (!UTILITY_DEBUG_ENABLED) return;
+  const ranked = Object.entries(contributions)
+    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
+    .slice(0, AI_TUNING.debug.topFactors)
+    .map(([name, val]) => [name, Number(val.toFixed(2))]);
+  const summary = {
+    team: team.name,
+    player: player.name,
+    total: Number(total.toFixed(2)),
+    tier: fitInfo?.tier || "n/a",
+    contributions: ranked,
+    multipliers: {
+      role: Number(multipliers.role.toFixed(2)),
+      panic: Number(multipliers.panic.toFixed(2)),
+      xi: Number(multipliers.xi.toFixed(2)),
+      quirk: Number(multipliers.quirk.toFixed(2))
+    },
+    timestamp: Date.now()
+  };
+  try {
+    console.log("[UTILITY DEBUG]", summary);
+  } catch (err) {
+    // ignore if console unavailable
+  }
+  const memory = ensureAuctionMemory(team);
+  memory.lastUtilityDebug = summary;
+}
+
+// classify desire level based on utility and team strategy
+function classifyDesire(u, strategy) {
+  const percentile = getUtilityPercentile(u);
+  const floors = AI_TUNING.desire.qualityFloor || { must: 6.5, good: 5.5 };
+  const meetsMustFloor = u >= floors.must;
+  const meetsGoodFloor = u >= floors.good;
+  if (percentile != null) {
+    const aggressionShift =
+      (strategy.aggression - AI_TUNING.desire.fallback.aggressionBaseline) *
+      AI_TUNING.desire.percentileAggressionWeight;
+    const mustThreshold = Math.max(
+      0,
+      Math.min(1, AI_TUNING.desire.percentiles.must - aggressionShift)
+    );
+    const goodThreshold = Math.max(
+      0,
+      Math.min(1, AI_TUNING.desire.percentiles.good - aggressionShift * 0.5)
+    );
+    if (percentile >= mustThreshold && meetsMustFloor) return "must";
+    if (percentile >= goodThreshold && meetsGoodFloor) return "good";
+    return "meh";
+  }
+
+  const fallback = AI_TUNING.desire.fallback;
+  const topThresh =
+    fallback.baseTop -
+    fallback.aggressionTopScale *
+      (strategy.aggression - fallback.aggressionBaseline); // aggressive teams lower threshold
+  const goodThresh =
+    fallback.baseGood -
+    fallback.aggressionGoodScale *
+      (strategy.aggression - fallback.aggressionBaseline);
+
+  if (u >= topThresh && meetsMustFloor) return "must";
+  if (u >= goodThresh && meetsGoodFloor) return "good";
+  return "meh";
+}
+
+// auction stage based on progress through players
+function getAuctionStage() {
+  if (!auctionPlayers || auctionPlayers.length === 0) return "early";
+  const progress = currentPlayerIndex / auctionPlayers.length;
+  if (progress < 0.33) return "early";
+  if (progress < 0.75) return "mid";
+  return "late";
+}
+
+// core personalized utility function for team T and player P
+function computePlayerUtility(team, player, fitInfoOverride) {
+  const teamConfig = getTeamConfig(team);
+  const debugActive = UTILITY_DEBUG_ENABLED;
+  const canCache =
+    !debugActive &&
+    !fitInfoOverride &&
+    team &&
+    team.id &&
+    player &&
+    player.id != null;
+  const teamVersion = team?.stateVersion || 0;
+  let cacheKey = null;
+  if (canCache) {
+    cacheKey = `${team.id}:${player.id}`;
+    const cached = UTILITY_CACHE.get(cacheKey);
+    if (cached && cached.teamVersion === teamVersion) {
+      recordUtilitySample(cached.value);
+      return cached.value;
+    }
+  }
+
+  const context = buildEvaluationContext(team, player, fitInfoOverride, teamConfig);
+
+  const baseUtility = computeBaseUtility(player, context);
+  const teamBonus = computeTeamSpecificBonus(team, player, context);
+  const urgencyBonus = computeUrgencyBonus(team, player, context);
+  const multiplierResult = computeUtilityMultipliers(team, player, context);
+  const rawUtility =
+    (baseUtility + teamBonus + urgencyBonus) * multiplierResult.value;
+  const totalUtility = clampUtility(rawUtility, player.rating ?? 6.5);
+
+  recordUtilitySample(totalUtility);
+  recordUtilityDebug(
+    team,
+    player,
+    {
+      base: baseUtility,
+      teamBonus,
+      urgency: urgencyBonus
+    },
+    multiplierResult.components,
+    totalUtility,
+    context.fitInfo
+  );
+
+  if (canCache && cacheKey) {
+    UTILITY_CACHE.set(cacheKey, {
+      value: totalUtility,
+      teamVersion
+    });
+  }
+
+  return totalUtility;
+}
+
+// very rough "how hot is the market for this player" 0..1
+function estimateMarketHotness(player) {
+  const cached = MARKET_HOTNESS_CACHE.get(player.id);
+  if (
+    cached &&
+    cached.poolVersion === poolStateVersion &&
+    cached.teamVersion === teamLandscapeVersion &&
+    cached.stage === stage
+  ) {
+    return cached.value;
+  }
+
+  let interested = 0;
+  let totalAI = 0;
+
+  teamsState.forEach((team) => {
+    if (team.isHuman) return;
+    totalAI += 1;
+    if (team.purse <= 0.4) return;
+    if (player.isOverseas && team.overseasBought >= 8) return;
+  if (team.squad && team.squad.length >= MAX_SQUAD_SIZE) return;
+
+    const { strategy, blueprint } = getTeamConfig(team);
+    const fitInfo = evaluatePlayerFit(team, player, blueprint);
+    const u = computePlayerUtility(team, player, fitInfo);
+    let desire = classifyDesire(u, strategy);
+    if (fitInfo.tier === "core" && desire !== "must") desire = "must";
+    else if (fitInfo.tier === "specialist" && desire === "meh") desire = "good";
+    if (desire === "must" || desire === "good") interested += 1;
+  });
+
+  if (totalAI === 0) return 0;
+  const value = Math.min(1, Math.max(0, interested / totalAI));
+  MARKET_HOTNESS_CACHE.set(player.id, {
+    poolVersion: poolStateVersion,
+    teamVersion: teamLandscapeVersion,
+    stage,
+    value
+  });
+  return value;
+}
+  function getTeamById(id) {
+  return teamsState.find((t) => t.id === id);
+}
+
+// max price this team is willing to pay to actually OWN the player
+function aiMaxPriceFor(team, player, stage, utility, fitInfoOverride) {
+  const teamConfig = getTeamConfig(team);
+  const fitInfo = fitInfoOverride || evaluatePlayerFit(team, player, teamConfig.blueprint);
+  const evaluatedUtility =
+    utility != null ? utility : computePlayerUtility(team, player, fitInfo);
+
+  const idealPrice = computeIdealPrice(player, evaluatedUtility, stage);
+  const personalityPrice = applyPersonalityAdjustments(
+    idealPrice,
+    team,
+    player,
+    fitInfo
+  );
+  const marketPrice = applyMarketForces(personalityPrice, team, player);
+  const constrainedPrice = applyPurseConstraints(
+    marketPrice,
+    team,
+    player,
+    fitInfo
+  );
+  const finalMax = sanityCheckMaxPrice(team, player, constrainedPrice, evaluatedUtility);
+  return Math.max(player.basePrice, finalMax);
+}
+
+function sanityCheckMaxPrice(team, player, calculatedMax, utility) {
+  let adjusted = calculatedMax;
+  const warnings = [];
+  const safeUtility = typeof utility === "number" ? utility : 0;
+  if (
+    adjusted > player.basePrice * 8 &&
+    (player.rating || 0) < 9
+  ) {
+    warnings.push(
+      `Capped at 8x base (was ${adjusted.toFixed(2)})`
+    );
+    adjusted = player.basePrice * 8;
+  }
+  const squadSize = team.squad ? team.squad.length : 0;
+  if (squadSize >= 10 && adjusted > team.purse * 0.4) {
+    warnings.push(
+      `Capped at 40% purse (was ${adjusted.toFixed(2)})`
+    );
+    adjusted = team.purse * 0.4;
+  }
+  const priceJump = adjusted - player.basePrice;
+  if (priceJump > 3 && safeUtility < 8) {
+    warnings.push(
+      `Utility ${safeUtility.toFixed(2)} too low for +${priceJump.toFixed(
+        2
+      )}cr jump`
+    );
+    adjusted = player.basePrice + 3;
+  }
+  if (warnings.length > 0 && UTILITY_DEBUG_ENABLED) {
+    console.warn(
+      `[PRICE CAP] ${team.name} for ${player.name}:`,
+      warnings
+    );
+  }
+  return adjusted;
+}
+
+// Should this AI team bid on this tick? Returns an object or null.
+function decideAIBid(team, player, nextBid) {
+  if (team.isHuman) return null;
+  const stage = getAuctionStage();
+  const { strategy, blueprint } = getTeamConfig(team);
+  const memory = ensureAuctionMemory(team);
+  if (team.purse < 2 && !memory.exhausted) {
+    memory.exhausted = true;
+    pushLog(`😴 ${team.name} is exhausted (low purse) – bidding less frequently`);
+  }
+  if (memory.exhausted && Math.random() < 0.7) {
+    memory.lastIntent = null;
+    return null;
+  }
+  let activeBluff =
+    memory.activeBluff && memory.activeBluff.playerId === player.id
+      ? memory.activeBluff
+      : null;
+  if (!activeBluff && memory.activeBluff) {
+    memory.activeBluff = null;
+  }
+  if (activeBluff) {
+    if (nextBid > activeBluff.cap) {
+      memory.activeBluff = null;
+      memory.lastIntent = null;
+      return null;
+    }
+    const continuationDecision = evaluateBluffContinuation(
+      team,
+      player,
+      nextBid,
+      activeBluff
+    );
+    if (continuationDecision) {
+      return continuationDecision;
+    }
+    return null;
+  }
+  if (memory.pendingAction && memory.pendingAction.playerId !== player.id) {
+    memory.pendingAction = null;
+    memory.pendingDelay = 0;
+  }
+  if (memory.activeBluff && memory.activeBluff.playerId !== player.id) {
+    memory.activeBluff = null;
+  }
+  if (
+    memory.activeBluff &&
+    memory.activeBluff.playerId === player.id &&
+    nextBid > memory.activeBluff.cap
+  ) {
+    memory.activeBluff = null;
+    memory.lastIntent = null;
+    return null;
+  }
+
+  const currentLeader =
+    currentBidTeamId != null ? getTeamById(currentBidTeamId) : null;
+  const unsoldPhaseActive =
+    typeof stage === "string" && stage.startsWith("unsold");
+  if (currentLeader?.isHuman) {
+    const bluffAnalysis = isHumanLikelyBluffing(
+      currentLeader,
+      player,
+      nextBid
+    );
+    if (
+      bluffAnalysis.likelyBluff &&
+      Math.random() < bluffAnalysis.confidence
+    ) {
+      memory.lastIntent = null;
+      return null;
+    }
+  }
+
+  const fitInfo = evaluatePlayerFit(team, player, blueprint);
+  const baseUtility = computePlayerUtility(team, player, fitInfo);
+  let utility = baseUtility;
+  const fomoBoost = calculateFOMO(team, player);
+  utility += fomoBoost * 2;
+  const tiltLevel = calculateTilt(team);
+  utility += tiltLevel * 0.5;
+  const desperation = fitInfo.needInfo?.maxSeverity || 0;
+  const stagePersona = getStagePersonality(team, stage);
+  const planAggro =
+    team.planState && team.planState.coreSecured < 1 && stage !== "late"
+      ? AI_TUNING.bidding.planAggroBoost
+      : 0;
+  const bucket = getRoleBucket(player.role, "auction");
+  const regretCount = memory.regretByRole?.[bucket] || 0;
+  const underdogAggro = evaluateUnderdogAggro(team);
+  const overseasUrgency = getOverseasUrgency(team, player, stage);
+  let desire = classifyDesire(baseUtility, strategy);
+  if (fitInfo.tier === "core" && desire !== "must") desire = "must";
+  else if (fitInfo.tier === "specialist" && desire === "meh") desire = "good";
+  if (unsoldPhaseActive && regretCount >= 2 && desire === "meh") {
+    desire = "good";
+  }
+  if ((memory.lastRoleLosses[bucket] || 0) >= 2 && desire === "good") {
+    desire = "must";
+  }
+  if (player.isOverseas) {
+    if (
+      overseasUrgency >= AI_TUNING.overseas.upgradeThreshold * 2 &&
+      desire === "good"
+    ) {
+      desire = "must";
+    } else if (
+      overseasUrgency >= AI_TUNING.overseas.upgradeThreshold &&
+      desire === "meh"
+    ) {
+      desire = "good";
+    }
+  }
+  if (fomoBoost > 0.6 && desire === "meh") {
+    desire = "good";
+  }
+
+  const adjustedAggression = strategy.aggression + tiltLevel * 0.15;
+  const adjustedValueDisciplineBase = Math.max(
+    0,
+    strategy.valueDiscipline - tiltLevel * 0.1
+  );
+  let redemptionBonus = 0;
+  if (unsoldPhaseActive) {
+    const similarMisses = (memory.missedOpportunities || []).filter(
+      (miss) => {
+        const sameBucket = miss.bucket === bucket;
+        const missUtility =
+          typeof miss.utility === "number" ? miss.utility : 0;
+        const similarUtility = Math.abs(missUtility - utility) < 1.5;
+        return sameBucket && similarUtility;
+      }
+    );
+    if (similarMisses.length > 0) {
+      redemptionBonus = Math.min(
+        2,
+        similarMisses.length * 0.5
+      );
+      if (desire === "meh" && similarMisses.length >= 2) {
+        desire = "good";
+      } else if (desire === "good" && similarMisses.length >= 3) {
+        desire = "must";
+      }
+      if (UTILITY_DEBUG_ENABLED) {
+        console.log(
+          `[REDEMPTION] ${team.name} seeking redemption for ${similarMisses.length} similar misses on ${player.name}`
+        );
+      }
+    }
+  }
+
+  const maxBuy = aiMaxPriceFor(team, player, stage, utility, fitInfo);
+  if (nextBid > maxBuy) {
+    memory.lastIntent = null;
+    return null;
+  }
+
+  let humanInterestBonus = 0;
+  if (memory.humanPauseSignals?.playerId === player.id) {
+    const pauseInfo = memory.humanPauseSignals;
+    const duration = pauseInfo.stillPaused
+      ? Date.now() - pauseInfo.pausedAt
+      : pauseInfo.pauseDuration;
+    const interestDurations = AI_TUNING.bidding.humanInterestDurations;
+    const interestWeights = AI_TUNING.bidding.humanInterestWeights;
+    if (duration > interestDurations.medium) humanInterestBonus = interestWeights.long;
+    else if (duration > interestDurations.short)
+      humanInterestBonus = interestWeights.medium;
+    else humanInterestBonus = interestWeights.short;
+    if (
+      pauseInfo.pausingTeamId &&
+      (blueprint.rivalries || []).includes(pauseInfo.pausingTeamId)
+    ) {
+      humanInterestBonus *= 1.5;
+    }
+    if (humanInterestBonus > interestWeights.medium && pauseInfo.pausingTeamId) {
+      const pausingTeam = getTeamById(pauseInfo.pausingTeamId);
+     
+    }
+  }
+
+  const rivalryHeat = getRivalryHeat(team, currentBidTeamId);
+  const baseRivalryBoost =
+    currentBidTeamId &&
+    (blueprint.rivalries || []).includes(currentBidTeamId)
+      ? AI_TUNING.bidding.rivalryBaseBoost
+      : 0;
+  const rivalryBoost = baseRivalryBoost * (1 + rivalryHeat);
+  const panicLevel = calculatePanicLevel(team, stage, fitInfo.needInfo);
+  const panicAggro =
+    panicLevel * AI_TUNING.bidding.panicAggroFactor +
+    underdogAggro +
+    overseasUrgency;
+  const warBoost = detectBiddingWar(team, player);
+  let regretPriorityBonus = 0;
+  if (unsoldPhaseActive && regretCount >= 2) {
+    regretPriorityBonus = Math.min(
+      1,
+      regretCount * AI_TUNING.bidding.regretStackWeight
+    );
+  }
+  const pileOnBonus = detectRivalryOpportunity(team, player, currentLeader);
+  const redemptionPriorityBoost = redemptionBonus * 3;
+  const applyPriorityBoosts = (decision) => {
+    if (!decision) return decision;
+    decision.priorityScore += pileOnBonus * 2 + redemptionPriorityBoost;
+    return decision;
+  };
+
+  const bluffPlan = evaluateBluffOpportunity(team, player, nextBid, utility);
+  if (bluffPlan && desire === "meh") {
+    memory.activeBluff = {
+      playerId: player.id,
+      cap: bluffPlan.cap,
+      targetTeamId: bluffPlan.targetTeamId,
+      startBid: nextBid,
+      startTime: Date.now()
+    };
+    memory.lastIntent = {
+      playerId: player.id,
+      bucket,
+      desire: "bluff",
+      maxBuy: bluffPlan.cap,
+      timestamp: Date.now(),
+      targetTeamId: bluffPlan.targetTeamId || null
+    };
+    return { mode: "bluff", priorityScore: bluffPlan.priorityScore };
+  }
+
+  // value ratio: utility per crore
+  const valueRatio = utility / nextBid;
+  const rivalryConfidence = evaluateRivalConfidence(team);
+  let valueDiscipline =
+    adjustedValueDisciplineBase * stagePersona.valueDiscipline;
+  if (memory.panicMode) valueDiscipline *= 0.85;
+  valueDiscipline *= Math.max(
+    AI_TUNING.bidding.valueDisciplineFloor,
+    1 - underdogAggro - overseasUrgency * 0.5
+  );
+  valueDiscipline = Math.max(
+    AI_TUNING.bidding.valueDisciplineFloor,
+    valueDiscipline
+  );
+  const valueThresh = Math.max(
+    AI_TUNING.bidding.minValueThreshold,
+    AI_TUNING.bidding.baseValueThreshold +
+      valueDiscipline * AI_TUNING.bidding.valueDisciplineWeight -
+      desperation * AI_TUNING.bidding.desperationWeight -
+      planAggro * AI_TUNING.bidding.planAggroWeight -
+      rivalryConfidence * AI_TUNING.bidding.rivalryConfidenceWeight -
+      regretPriorityBonus * AI_TUNING.bidding.regretPenaltyWeight -
+      humanInterestBonus * AI_TUNING.bidding.humanInterestWeight
+  );
+
+  if (desire === "must") {
+    const decision = {
+      mode: "buy",
+      priorityScore:
+        utility +
+        adjustedAggression * 2 +
+        fitInfo.matchScore * 0.5 +
+        desperation * 3 +
+        rivalryBoost +
+        planAggro * 5 +
+        panicAggro * 2 +
+        humanInterestBonus * 2 +
+        regretPriorityBonus * 3 +
+        warBoost * 5 +
+        underdogAggro * AI_TUNING.underdog.priorityWeight +
+        overseasUrgency * AI_TUNING.overseas.priorityWeight
+    };
+    memory.lastIntent = {
+      playerId: player.id,
+      bucket,
+      desire,
+      maxBuy,
+      timestamp: Date.now(),
+      targetTeamId: null
+    };
+    return applyPriorityBoosts(decision);
+  }
+
+  if (desire === "good") {
+    if (valueRatio >= valueThresh * AI_TUNING.bidding.valueRatioFlex) {
+      const decision = {
+        mode: "buy",
+        priorityScore:
+          utility +
+          adjustedAggression +
+          fitInfo.matchScore * 0.3 +
+          rivalryBoost * 0.5 +
+          desperation * 2 +
+          planAggro * 3 +
+          panicAggro +
+          humanInterestBonus * 1.5 +
+          regretPriorityBonus * 2 +
+          warBoost * 4 +
+          underdogAggro * (AI_TUNING.underdog.priorityWeight * 0.8) +
+          overseasUrgency * (AI_TUNING.overseas.priorityWeight * 0.8)
+      };
+      memory.lastIntent = {
+        playerId: player.id,
+        bucket,
+        desire,
+        maxBuy,
+        timestamp: Date.now(),
+        targetTeamId: null
+      };
+      return applyPriorityBoosts(decision);
+    }
+    memory.lastIntent = null;
+    return null;
+  }
+
+  const hotness = estimateMarketHotness(player);
+  if (hotness < 0.4) {
+    memory.lastIntent = null;
+    return null;
+  }
+  const inflationCap = Math.min(
+    player.basePrice * (1.4 + hotness * 0.4),
+    team.purse * 0.2
+  );
+  if (nextBid <= inflationCap) {
+    const decision = {
+      mode: "inflate",
+      priorityScore:
+        utility * 0.3 +
+        hotness * 3 +
+        rivalryBoost * 0.3 +
+        humanInterestBonus
+    };
+    memory.lastIntent = {
+      playerId: player.id,
+      bucket,
+      desire: "inflate",
+      maxBuy,
+      timestamp: Date.now(),
+      targetTeamId: null
+    };
+    return applyPriorityBoosts(decision);
+  }
+
+  memory.lastIntent = null;
+  return null;
+}
+
+function aiTick() {
+  if (aiTickRunning) return;
+  aiTickRunning = true;
+  
+  try {
+    // Decay rivalry heat and bluff stats for all teams
+    teamsState.forEach((team) => {
+      const memory = ensureAuctionMemory(team);
+      if (memory.rivalryHeat) {
+        Object.keys(memory.rivalryHeat).forEach((rivalId) => {
+          memory.rivalryHeat[rivalId] = Math.max(
+            0,
+            memory.rivalryHeat[rivalId] - 0.02
+          );
+        });
+      }
+      if (!team.isHuman) decayBluffStats(team);
+    });
+
+    const player = getCurrentPlayer();
+    if (!player) return;
+    if (!teamsState || teamsState.length === 0) return;
+
+    // small chance that no one acts this tick, to keep it human-ish
+    if (Math.random() < 0.25) return;
+
+    const eligibleAI = teamsState.filter((t) => {
+      if (t.isHuman) return false;
+      if (t.id === currentBidTeamId) return false;
+      if (t.purse <= 0.4) return false;
+      if (t.squad && t.squad.length >= MAX_SQUAD_SIZE) return false;
+      if (player.isOverseas && t.overseasBought >= 8) return false;
+      return true;
+    });
+
+    if (eligibleAI.length === 0) return;
+
+    const nextBid =
+      currentBid === 0 ? player.basePrice : currentBid + bidStep;
+
+    // collect all interested AI with their decisions
+    const candidates = [];
+    eligibleAI.forEach((team) => {
+      const decision = decideAIBid(team, player, nextBid);
+      if (!decision) return;
+      candidates.push({
+        team,
+        decision,
+        score: decision.priorityScore
+      });
+    });
+
+    if (candidates.length === 0) return;
+
+    // pick the highest-score candidate
+    candidates.sort((a, b) => b.score - a.score);
+    const top = candidates[0];
+    const rivalsAtSameScore = candidates.filter(
+      (c) => Math.abs(c.score - top.score) < 0.8
+    );
+    const chosen =
+      rivalsAtSameScore[Math.floor(Math.random() * rivalsAtSameScore.length)];
+    const team = chosen.team;
+    const decision = chosen.decision;
+    const previousLeaderId = currentBidTeamId;
+    
+    if (!scheduleBid(team, player, decision, nextBid)) return;
+    
+    const teamMemory = ensureAuctionMemory(team);
+    teamMemory.currentWar = teamMemory.currentWar || {};
+    const warEntry = teamMemory.currentWar[player.id] || {
+      count: 0,
+      lastOpponent: null
+    };
+    if (previousLeaderId && previousLeaderId !== team.id) {
+      if (warEntry.lastOpponent === previousLeaderId) warEntry.count += 1;
+      else warEntry.count = 1;
+      warEntry.lastOpponent = previousLeaderId;
+      adjustRivalryHeat(team, previousLeaderId, 0.05);
+    } else {
+      warEntry.count = 0;
+      warEntry.lastOpponent = null;
+    }
+    teamMemory.currentWar[player.id] = warEntry;
+
+    // place the bid
+    currentBid = nextBid;
+    currentBidTeamId = team.id;
+    lastBidTimestamp = Date.now();
+    markHumanActivity();
+
+    pushLog(`🤖 ${team.name} bids ₹${currentBid.toFixed(2)} cr for ${player.name}`);
+
+    renderPlayerPanel();
+    renderSectionList();
+    renderTeamsList();
+  } finally {
+    aiTickRunning = false;
+  }
+}
+
+  function startAI() {
+  if (autoInterval) clearInterval(autoInterval);
+  autoInterval = setInterval(aiTick, AI_TUNING.timers.aiTickMs);
+}
+
+function stopAI() {
+  if (autoInterval) clearInterval(autoInterval);
+  autoInterval = null;
+}
+
+function syncAuctionTimers(graceMs = 0) {
+  const now = Date.now();
+  lastBidTimestamp = now;
+  lastHumanInteraction = now;
+  if (graceMs) {
+    autoResumeGraceUntil = Math.max(autoResumeGraceUntil, now + graceMs);
+  }
+}
+
+// ----------------------------
+// AUTO SELL / AUTO UNSOLD
+// ----------------------------
+
+function checkAutoTimeouts() {
+  updateTimerDisplay();
+  const player = getCurrentPlayer();
+  if (!player) return;
+  if (isPaused) return;
+
+  const now = Date.now();
+  if (now < autoResumeGraceUntil) return;
+  const sinceBid = (now - lastBidTimestamp) / 1000;
+  const sinceHuman = (now - lastHumanInteraction) / 1000;
+
+  if (currentBidTeamId != null) {
+    // auto-sell after 45s of no bid & no human
+    if (
+      sinceBid >= AI_TUNING.timers.autoSellSeconds &&
+      sinceHuman >= AI_TUNING.timers.autoSellSeconds
+    ) {
+      sellCurrentPlayer(false);
+    }
+  } else {
+    // auto-unsold after 60s of no bid and no human activity
+    if (
+      sinceBid >= AI_TUNING.timers.autoUnsoldSeconds &&
+      sinceHuman >= AI_TUNING.timers.autoUnsoldSeconds
+    ) {
+      markUnsoldAndAdvance(
+        player,
+        `⌛ ${player.name} went UNSOLD after ${AI_TUNING.timers.autoUnsoldSeconds}s with no bids.`
+      );
+    }
+  }
+}
+
+  function startAuto() {
+  if (autoInterval) clearInterval(autoInterval);
+
+  autoInterval = setInterval(() => {
+    try {
+      // 1) Check auto-sell/unsold timers
+      checkAutoTimeouts();
+      
+      // 2) Let AI teams decide if they want to bid
+      aiTick();
+    } catch (err) {
+      console.error("autoInterval tick error:", err);
+      if (debugToggleEl?.checked) {
+        pushLog(`⚠️ autoInterval tick error: ${err.message}`);
+      }
+    }
+  }, AI_TUNING.timers.tickMs || 1100); // or whatever interval you want
+}
+
+function stopAuto() {
+  if (autoInterval) {
+    clearInterval(autoInterval);
+    autoInterval = null;
+  }
+}
+
+  // ----------------------------
+  // AUCTION ACTIONS (with caps)
+  // ----------------------------
+
+  function canTeamBidOn(team, player, amount, options = {}) {
+    const { suppressAlerts = false, suppressOverseasAlert = false } = options;
+    const showAlert = (message, { isOverseas = false } = {}) => {
+      if (suppressAlerts) return;
+      if (isOverseas && suppressOverseasAlert) return;
+      alert(message);
+    };
+    if (team.squad.length >= MAX_SQUAD_SIZE) {
+      showAlert(
+        `${team.name} already has ${MAX_SQUAD_SIZE} players. Squad is full.`
+      );
+      return false;
+    }
+    if (player.isOverseas && team.overseasBought >= 8) {
+      showAlert(
+        `${team.name} has already bought 8 overseas players. Cannot buy more overseas.`,
+        { isOverseas: true }
+      );
+      return false;
+    }
+    if (amount > team.purse) {
+      showAlert(
+        `${team.name} doesn't have enough purse for ₹${amount.toFixed(2)} cr.`
+      );
+      return false;
+    }
+    
+    return true;
+  }
+
+  function placeHumanBid(teamId, customAmount = null) {
+  const player = getCurrentPlayer();
+  if (!player) return;
+
+  const team = getTeamById(teamId);
+  if (!team) return;
+
+  // 🔴 NEW: prevent the same team from bidding again if they already lead
+  if (currentBidTeamId === team.id) {
+    alert(`${team.name} already has the highest bid. Wait for another team to bid, or sell the player.`);
+    return;
+  }
+
+  let newBid;
+  if (customAmount != null) {
+    newBid = customAmount;
+  } else {
+    newBid = currentBid === 0 ? player.basePrice : currentBid + bidStep;
+  }
+
+  if (newBid < player.basePrice) {
+    alert(
+      `Bid must be at least base price of ₹${player.basePrice.toFixed(
+        2
+      )} cr.`
+    );
+    return;
+  }
+
+  if (newBid <= currentBid) {
+    alert("Bid must be higher than current bid.");
+    return;
+  }
+
+  if (
+    !canTeamBidOn(team, player, newBid, {
+      suppressOverseasAlert: true
+    })
+  )
+    return;
+
+  const timeSinceReveal = Date.now() - currentPlayerRevealAt;
+  if (timeSinceReveal <= 3000) {
+    teamsState.forEach((t) => {
+      const memory = ensureAuctionMemory(t);
+      const signals = memory.humanBehaviorSignals;
+      signals.quickBids.unshift({
+        playerId: player.id,
+        teamId,
+        timestamp: Date.now()
+      });
+      if (signals.quickBids.length > 10) signals.quickBids.length = 10;
+    });
+  }
+
+  currentBid = newBid;
+  currentBidTeamId = team.id;
+  lastBidTimestamp = Date.now();
+  markHumanActivity();
+
+  pushLog(
+    `🧍 ${team.name} (${team.ownerName || "Human"}) bids ₹${currentBid.toFixed(
+      2
+    )} cr for ${player.name}`
+  );
+  renderPlayerPanel();
+}
+
+function advanceToNextPlayer() {
+    if (finalizeAuctionBecauseFullSquads()) {
+      return;
+    }
+    const outgoingPlayer = getCurrentPlayer();
+    if (outgoingPlayer) {
+      clearWarTrackingForPlayer(outgoingPlayer.id);
+    }
+    currentPlayerIndex++;
+    currentBid = 0;
+    currentBidTeamId = null;
+
+    // ---------------------------
+    // HANDLE SECTION WRAPPING
+    // ---------------------------
+    if (currentPlayerIndex >= auctionPlayers.length) {
+
+        // -----------------------------------------
+        // MAIN AUCTION → UNSOLD ROUND 1
+        // -----------------------------------------
+        if (stage === "main") {
+            if (unsoldPool.length > 0) {
+                stage = "unsold";
+                auctionPlayers = unsoldPool;
+                unsoldPool = [];
+                currentPlayerIndex = 0;
+
+                pushLog(`♻️ Starting UNSOLD ROUND 1 with ${auctionPlayers.length} players.`);
+                renderPlayerPanel();
+                renderTeamsList();
+                return;
+            } else {
+                pushLog("🏁 Auction completed. No unsold players.");
+                stopAI();
+                stopAuto();
+                renderPlayerPanel();
+                return;
+            }
+        }
+
+        // -----------------------------------------
+        // UNSOLD ROUND 1 → UNSOLD ROUND 2
+        // -----------------------------------------
+        if (stage === "unsold") {
+            if (unsoldPool.length > 0) {
+                stage = "unsold_round_two";
+                auctionPlayers = unsoldPool;
+                unsoldPool = [];
+                currentPlayerIndex = 0;
+
+                pushLog(`♻️ Starting UNSOLD ROUND 2 with ${auctionPlayers.length} players.`);
+                renderPlayerPanel();
+                renderTeamsList();
+                return;
+            } else {
+                pushLog("🏁 Auction completed – all unsold players cleared in Round 1.");
+                stopAI();
+                stopAuto();
+                renderPlayerPanel();
+                return;
+            }
+        }
+
+        // -----------------------------------------
+        // UNSOLD ROUND 2 → END
+        // -----------------------------------------
+        if (stage === "unsold_round_two") {
+            pushLog("🏁 Auction completed after UNSOLD ROUND 2.");
+            stopAI();
+            stopAuto();
+            renderPlayerPanel();
+            return;
+        }
+        syncAuctionTimers();
+        renderPlayerPanel();
+        renderTeamsList();
+        updateTimerDisplay();
+        return;
+    }
+
+    // Reset clocks for next player
+    syncAuctionTimers();
+    currentPlayerRevealAt = Date.now();
+
+    // Render panels for next player
+    renderPlayerPanel();
+    renderTeamsList();
+}
+
+function markUnsoldAndAdvance(player, message) {
+  if (!player) return;
+  unsoldIds.add(player.id);
+  if (stage === "main") {
+    playerStatus.set(player.id, "unsold_main");
+    unsoldPool.push(player);
+  } else if (stage === "unsold") {
+    playerStatus.set(player.id, "unsold_round_one");
+    unsoldPool.push(player);
+  } else {
+    playerStatus.set(player.id, "unsold_final");
+  }
+  pushLog(message);
+  invalidatePlayerPoolCaches();
+
+  teamsState.forEach((team) => {
+    const memory = ensureAuctionMemory(team);
+    if (memory.lastIntent && memory.lastIntent.playerId === player.id) {
+      const utility = computePlayerUtility(team, player);
+      if (utility >= AI_TUNING.bidding.playerFitThreshold) {
+        memory.missedOpportunities = memory.missedOpportunities || [];
+        memory.missedOpportunities.unshift({
+          playerId: player.id,
+          name: player.name,
+          utility,
+          bucket: getRoleBucket(player.role, "auction"),
+          stage
+        });
+        if (memory.missedOpportunities.length > 10)
+          memory.missedOpportunities.length = 10;
+        const bucket = getRoleBucket(player.role, "auction");
+        memory.regretByRole[bucket] = (memory.regretByRole[bucket] || 0) + 1;
+      }
+    }
+    if (memory.pendingAction && memory.pendingAction.playerId === player.id) {
+      memory.pendingAction = null;
+      memory.pendingDelay = 0;
+    }
+    if (memory.activeBluff && memory.activeBluff.playerId === player.id) {
+      memory.activeBluff = null;
+    }
+    if (memory.lastIntent && memory.lastIntent.playerId === player.id) {
+      memory.lastIntent = null;
+    }
+    if (memory.currentWar) {
+      delete memory.currentWar[player.id];
+    }
+    resetHumanPauseSignal(memory, player.id);
+  });
+
+  // 🔥 NEW: sync all player lists + external window
+  renderSectionList();
+  renderPlayerPoolList();
+  // (both call refreshPlayersWindow internally)
+
+  advanceToNextPlayer();
+}
+
+  function sellCurrentPlayer(manual = true) {
+  const player = getCurrentPlayer();
+  if (!player) return;
+
+  if (currentBidTeamId == null) {
+    // no bids — unsold
+    markUnsoldAndAdvance(
+      player,
+      `❌ ${player.name} marked UNSOLD (no bidder).`
+    );
+    if (manual) markHumanActivity();
+    return;
+  }
+
+  const team = getTeamById(currentBidTeamId);
+  if (!team) return;
+
+  // sanity check caps: if somehow caps violated, just don't sell
+  if (!canTeamBidOn(team, player, currentBid)) {
+    pushLog(
+      `⚠️ Sale blocked: ${team.name} cannot buy ${player.name} due to caps.`
+    );
+    return;
+  }
+
+  team.purse -= currentBid;
+  updateSpendingMomentum(team, currentBid);
+  team.squad.push({
+    playerId: player.id,
+    name: player.name,
+    price: currentBid,
+    isOverseas: player.isOverseas,
+    from: "auction",
+    role: player.role,
+    bracket: player.bracket,
+    rating: player.rating,
+    battingHand: player.battingHand || null,
+    bowlingStyle: player.bowlingStyle || null,
+    country: player.country || null
+  });
+  if (player.isOverseas) team.overseasBought += 1;
+  updatePlanOnAcquisition(team, player);
+  bumpTeamStateVersion(team);
+
+  soldIds.add(player.id);
+  unsoldIds.delete(player.id);
+  playerStatus.set(player.id, "sold");
+  invalidatePlayerPoolCaches();
+  updateAuctionMemoryOnSale(team, player, currentBid);
+
+  pushLog(
+    `${manual ? "✅ SOLD" : "⌛ Auto-sell"}: ${player.name} to ${
+      team.name
+    } for ₹${currentBid.toFixed(2)} cr.`
+  );
+
+  soldHistory.unshift({
+    playerId: player.id,
+    playerName: player.name,
+    teamId: team.id,
+    teamName: team.name,
+    price: currentBid,
+    timestamp: Date.now()
+  });
+  if (soldHistory.length > 200) soldHistory.length = 200;
+  renderSoldList();
+  logLines = [];
+  renderLog();
+
+  // 🔥 NEW: keep all player views in sync
+  renderSectionList();      // updates "By Section" view + calls refreshPlayersWindow()
+  renderPlayerPoolList();   // updates the filters view + also calls refreshPlayersWindow()
+
+  if (manual) markHumanActivity();
+  if (finalizeAuctionBecauseFullSquads()) {
+    return;
+  }
+  advanceToNextPlayer();
+}
+
+  function skipCurrentPlayer() {
+    const player = getCurrentPlayer();
+    if (!player) return;
+    markHumanActivity();
+    markUnsoldAndAdvance(
+      player,
+      `⏭ ${player.name} skipped and marked UNSOLD manually.`
+    );
+  }
+
+  function nextWithoutSelling() {
+    const player = getCurrentPlayer();
+    if (!player) return;
+    if (
+      currentBidTeamId != null &&
+      !confirm(
+        "There is a current highest bid. Are you sure you want to move on without selling?"
+      )
+    ) {
+      return;
+    }
+    pushLog(`➡️ Moved to next player without sale for ${player.name}.`);
+    markHumanActivity();
+    advanceToNextPlayer();
+  }
+  function computeIdealPrice(player, utility, stage) {
+  const basePremium = 1 + (AI_TUNING.pricing.baseUtilityWeight * (utility - 6)) / 4;
+  let price = player.basePrice * basePremium;
+  const stageKey =
+    typeof stage === "string" && stage.startsWith("unsold")
+      ? stage
+      : stage || "default";
+  const stageMult =
+    AI_TUNING.pricing.stageMultipliers[stageKey] ??
+    AI_TUNING.pricing.stageMultipliers.default;
+  return price * stageMult;
+}
+
+function applyPersonalityAdjustments(basePrice, team, player, fitInfo) {
+  const { strategy } = getTeamConfig(team);
+  const memory = ensureAuctionMemory(team);
+  const stage = getAuctionStage();
+  const stagePersona = getStagePersonality(team, stage);
+
+  const aggressionBase = (0.9 + strategy.aggression * 0.3) * stagePersona.aggression;
+  let aggression = aggressionBase;
+  if (fitInfo.tier === "core")
+    aggression += AI_TUNING.pricing.tierAggressionAdjust.core;
+  else if (fitInfo.tier === "flyer")
+    aggression += AI_TUNING.pricing.tierAggressionAdjust.flyer;
+
+  const panicLevel = calculatePanicLevel(team, stage, fitInfo.needInfo);
+  const panicBoost = 1 + panicLevel * 0.15;
+  const rivalryBoost = 1 + evaluateRivalConfidence(team);
+  const momentum = memory.spendingMomentum?.momentumMultiplier || 1.0;
+
+  const personalityMult = clamp(
+    (aggression + panicBoost - 1) * momentum * rivalryBoost,
+    0.6,
+    2.0
+  );
+
+  return basePrice * personalityMult;
+}
+
+function applyMarketForces(basePrice, team, player) {
+  const memory = ensureAuctionMemory(team);
+  const bucket = getRoleBucket(player.role, "auction");
+  let price = basePrice;
+
+  const inflation = memory.priceInflation[bucket];
+  if (inflation && inflation.count >= 3) {
+    const avgRatio = inflation.totalPaid / Math.max(0.01, inflation.totalBase);
+    if (avgRatio > 1.5) {
+      const inflationMult = Math.min(1.5, 1 + (avgRatio - 1.5) * 0.35);
+      price *= inflationMult;
+    }
+  }
+
+  const opportunity = evaluateOpportunityCost(player);
+  price *= opportunity.multiplier;
+
+  return price;
+}
+
+function applyPurseConstraints(basePrice, team, player, fitInfo) {
+  const stage = getAuctionStage();
+  const memory = ensureAuctionMemory(team);
+  let price = basePrice;
+
+  const stagePercent = getMaxPursePercent(team, stage, fitInfo, memory);
+  const maxSingle = team.purse * stagePercent;
+  price = Math.min(price, maxSingle);
+
+  const currentSize = team.squad ? team.squad.length : 0;
+  const mustFillSlots = Math.max(1, MIN_SQUAD_SIZE - currentSize);
+  const safetyPurse = (mustFillSlots - 1) * AI_TUNING.pricing.minPerSlot;
+  price = Math.min(price, Math.max(team.purse - safetyPurse, player.basePrice));
+
+  if (memory.panicMode && fitInfo.tier === "core") {
+    const desperationCeiling = Math.min(team.purse * 0.7, player.basePrice * 6);
+    price = Math.max(price, desperationCeiling);
+  }
+
+  const sanityCap = player.basePrice * (player.rating >= 9 ? 10 : 8);
+  price = Math.min(price, sanityCap);
+
+  return price;
+}
+
+function getMaxPursePercent(team, stage, fitInfo, memory) {
+  const blueprint = getTeamConfig(team).blueprint;
+  let maxPercent =
+    blueprint.spendingCurve?.[stage] ??
+    DEFAULT_BLUEPRINT.spendingCurve[stage] ??
+    0.45;
+  if (fitInfo.tier === "core" && fitInfo.needInfo.maxSeverity > 0.6) {
+    maxPercent += AI_TUNING.pricing.maxPercent.coreBonus;
+  }
+  if (fitInfo.tier === "flyer") {
+    maxPercent -= AI_TUNING.pricing.maxPercent.flyerPenalty;
+  }
+  if (memory.panicMode) {
+    maxPercent += AI_TUNING.pricing.maxPercent.panicBonus;
+  }
+  return clamp(
+    maxPercent,
+    AI_TUNING.pricing.maxPercent.min,
+    AI_TUNING.pricing.maxPercent.max
+  );
+}
+
+
+  function skipCurrentSection() {
+    const player = getCurrentPlayer();
+    if (!player) return;
+    if (stage !== "main") {
+      // In UNSOLD rounds, "Skip Section" will just end the auction early
+      if (
+        confirm(
+          "End the auction now and skip all remaining UNSOLD players? They will remain unsold."
+        )
+      ) {
+        pushLog("🏁 Auction ended early. Remaining players left UNSOLD.");
+        stopAI();
+        stopAuto();
+        // Move index past the end so renderPlayerPanel() shows 'Auction Finished'
+        currentPlayerIndex = auctionPlayers.length;
+        currentBid = 0;
+        currentBidTeamId = null;
+        renderPlayerPanel();
+        renderTeamsList();
+      }
+      return;
+    }
+
+    const idx = currentPlayerIndex;
+    const range = bracketRanges.find(
+      (r) => idx >= r.start && idx <= r.end
+    );
+    if (!range) {
+      alert("Could not determine current section range.");
+      return;
+    }
+
+    if (
+      !confirm(
+        "Skip all remaining players in this section and send them to the UNSOLD pool?"
+      )
+    ) {
+      return;
+    }
+
+    for (let i = idx; i <= range.end && i < auctionPlayers.length; i++) {
+      const p = auctionPlayers[i];
+      unsoldIds.add(p.id);
+      playerStatus.set(p.id, "unsold_main");
+      unsoldPool.push(p);
+      pushLog(`⏭ Section skip: ${p.name} moved to UNSOLD pool.`);
+    }
+
+    // Move index to the last player of this section, then let
+    // advanceToNextPlayer() handle moving to either the next
+    // section or the UNSOLD rounds.
+    currentPlayerIndex = range.end;
+    currentBid = 0;
+    currentBidTeamId = null;
+    markHumanActivity();
+    invalidatePlayerPoolCaches();
+    syncAuctionTimers();
+    advanceToNextPlayer();
+    renderSectionList();
+  }
+
+  // ----------------------------
+  // EVENTS
+  // ----------------------------
+
+  startBtn.addEventListener("click", () => {
+    const hostName = hostNameInput.value.trim() || "Host";
+
+    const cards = Array.from(teamGridEl.children);
+    const selectedTeams = [];
+    let humanCount = 0;
+    Object.keys(TEAM_INITIAL_PURSES).forEach((key) => {
+      delete TEAM_INITIAL_PURSES[key];
+    });
+
+    cards.forEach((card, idx) => {
+      const team = IPL_TEAMS_2026[idx];
+      const mode = card._modeSelect.value;
+      const isHuman = mode === "human";
+      const ownerName = card._nameInput.value.trim();
+      const blueprint = TEAM_BLUEPRINTS[team.id] || DEFAULT_BLUEPRINT;
+      const retentionSummary = TEAM_RETENTION_SUMMARY[team.id];
+
+      if (isHuman) humanCount++;
+
+      selectedTeams.push({
+        id: team.id,
+        name: team.name,
+        purse: team.purse,
+        initialPurse: team.purse,
+        stateVersion: 0,
+        auctionMemory: createInitialAuctionMemory(),
+        isHuman,
+        ownerName: isHuman ? ownerName || hostName : "Bot",
+        color: team.color,
+        logoUrl: team.logoUrl,
+        blueprint,
+        planState: initializePlanState(team.purse, blueprint, retentionSummary),
+        retentionSummary,
+        squad: team.retained.map((name) => {
+          const isOS = RETAINED_OVERSEAS_MAP[team.id]?.includes(name) || false;
+          const meta = buildRetainedPlayerMeta(name, team.id);
+          return {
+            playerId: null,
+            name,
+            price: 0,
+            from: "retained",
+            isOverseas: isOS,
+            role: meta.role,
+            bracket: meta.bracket,
+            rating: meta.rating,
+            battingHand: meta.battingHand,
+            bowlingStyle: meta.bowlingStyle
+          };
+        }),
+        overseasBought: team.retained.filter(
+          (n) => RETAINED_OVERSEAS_MAP[team.id]?.includes(n)
+        ).length
+      });
+      TEAM_INITIAL_PURSES[team.id] = team.purse;
+    });
+
+    const rawStep = parseFloat(bidStepInput.value);
+    if (isNaN(rawStep) || rawStep <= 0) {
+      alert("Bid step must be a positive number.");
+      return;
+    }
+    bidStep = rawStep;
+
+    auctionPlayers = buildAuctionOrder();
+    unsoldPool = [];
+    soldIds = new Set();
+    unsoldIds = new Set();
+    soldHistory = [];
+    stage = "main";
+    resetPlayerStatuses();
+    poolStateVersion = 0;
+    teamLandscapeVersion = 0;
+    UTILITY_CACHE.clear();
+    MARKET_HOTNESS_CACHE.clear();
+    remainingOverseasCountCache = { version: -1, count: 0 };
+
+    let startIndex = parseInt(startPlayerInput.value, 10);
+    if (
+      isNaN(startIndex) ||
+      startIndex < 1 ||
+      startIndex > auctionPlayers.length
+    ) {
+      startIndex = 1;
+    }
+    currentPlayerIndex = startIndex - 1;
+    currentBid = 0;
+    currentBidTeamId = null;
+    currentPlayerRevealAt = Date.now();
+
+    teamsState = selectedTeams;
+    renderSoldList();
+    logLines = [];
+
+    linkSectionEl.classList.remove("hidden");
+    shareLinkEl.textContent = window.location.href;
+
+    lobbyEl.classList.add("hidden");
+    auctionEl.classList.remove("hidden");
+
+    syncAuctionTimers(AI_TUNING.timers.pauseResumeBufferMs);
+    isPaused = false;
+    activePauseTeamId = null;
+    pauseHintTeamId = null;
+    btnPause.textContent = "⏸ Pause auto-sell";
+
+    renderTeamsList();
+    renderPlayerPanel();
+    renderControlTeamSelect();
+    renderSectionList();
+    pushLog(
+      `🎉 Auction started by ${hostName}. Human teams: ${humanCount}, Computer teams: ${
+        teamsState.length - humanCount
+      }. Bracket order: marquee → batters → bowlers → all-rounders (shuffled within each).`
+    );
+
+    if (finalizeAuctionBecauseFullSquads()) {
+      return;
+    }
+
+    startAI();
+    startAuto();
+  });
+
+  btnBid.addEventListener("click", () => {
+    const teamId = controlTeamSelect.value;
+    if (!teamId) return;
+    placeHumanBid(teamId);
+  });
+
+  btnCustomBid.addEventListener("click", () => {
+    const teamId = controlTeamSelect.value;
+    if (!teamId) return;
+    const player = getCurrentPlayer();
+    if (!player) return;
+
+    const minBid =
+      currentBid === 0
+        ? player.basePrice
+        : Math.max(player.basePrice, currentBid + 0.01);
+    const val = prompt(
+      `Enter custom bid amount in crore (>= ₹${minBid.toFixed(2)}):`,
+      minBid.toFixed(2)
+    );
+    if (!val) return;
+
+    const amount = parseFloat(val);
+    if (isNaN(amount)) {
+      alert("Not a valid number.");
+      return;
+    }
+    teamsState.forEach((team) => {
+      const memory = ensureAuctionMemory(team);
+      const signals = memory.humanBehaviorSignals;
+      signals.customBidAttempts.unshift({
+        playerId: player.id,
+        teamId,
+        amount,
+        timestamp: Date.now()
+      });
+      if (signals.customBidAttempts.length > 10)
+        signals.customBidAttempts.length = 10;
+    });
+    placeHumanBid(teamId, amount);
+  });
+
+  btnSell.addEventListener("click", () => {
+    sellCurrentPlayer(true);
+  });
+
+  btnSkip.addEventListener("click", () => {
+    skipCurrentPlayer();
+  });
+
+  btnNext.addEventListener("click", () => {
+    nextWithoutSelling();
+  });
+
+  btnPause.addEventListener("click", () => {
+    if (isPaused) applyPauseState(false, activePauseTeamId);
+    else applyPauseState(true, getActiveHumanTeamIdForPause());
+  });
+
+  btnSkipSection.addEventListener("click", () => {
+    skipCurrentSection();
+  });
+
+  if (sectionSelect) {
+    sectionSelect.addEventListener("change", () => {
+      renderSectionList();
+    });
+  }
+  if (teamViewTabsEl) {
+  teamViewTabsEl.addEventListener("click", (e) => {
+    const btn = e.target.closest(".tab-btn");
+    if (!btn) return;
+    const view = btn.dataset.view;
+    Array.from(teamViewTabsEl.querySelectorAll(".tab-btn")).forEach((b) =>
+      b.classList.toggle("active", b === btn)
+    );
+    if (view === "summary") {
+      document.getElementById("team-summary-view").classList.remove("hidden");
+      teamSquadViewEl.classList.add("hidden");
+    } else {
+      document.getElementById("team-summary-view").classList.add("hidden");
+      teamSquadViewEl.classList.remove("hidden");
+    }
+  });
+}
+
+if (playerViewTabsEl) {
+  playerViewTabsEl.addEventListener("click", (e) => {
+    const btn = e.target.closest(".tab-btn");
+    if (!btn) return;
+    const mode = btn.dataset.mode;
+    Array.from(playerViewTabsEl.querySelectorAll(".tab-btn")).forEach((b) =>
+      b.classList.toggle("active", b === btn)
+    );
+    if (mode === "sections") {
+      playerSectionsViewEl.classList.remove("hidden");
+      playerPoolViewEl.classList.add("hidden");
+    } else {
+      playerSectionsViewEl.classList.add("hidden");
+      playerPoolViewEl.classList.remove("hidden");
+      renderPlayerPoolList();
+    }
+  });
+}
+
+if (playersBoardBtn) {
+  playersBoardBtn.addEventListener("click", () => {
+    openPlayersWindow();
+  });
+}
+
+if (auctionInfoTabsEl) {
+ auctionInfoTabsEl.addEventListener("click", (e) => {
+  const btn = e.target.closest(".tab-btn");
+  if (!btn) return;
+
+  const info = btn.dataset.info;
+
+  // Update which tab looks active
+  Array.from(auctionInfoTabsEl.querySelectorAll(".tab-btn")).forEach((b) => {
+    b.classList.toggle("active", b === btn);
+  });
+
+  // Always keep Teams panel hidden
+  if (infoTeamsEl) {
+    infoTeamsEl.classList.add("hidden");
+  }
+
+  // Hide all other panels
+  if (infoSoldEl) infoSoldEl.classList.add("hidden");
+  if (infoLogEl) infoLogEl.classList.add("hidden");
+
+  // Show the selected one
+  if (info === "sold" && infoSoldEl) {
+    infoSoldEl.classList.remove("hidden");
+  } else if (info === "log" && infoLogEl) {
+    infoLogEl.classList.remove("hidden");
+  }
+});
+
+  // ----------------------------
+  // INIT
+  // ----------------------------
+}
+  initLobbyTeams();
+  renderLog();
+  renderSectionList();
+  renderPlayerPoolList();
+  renderSoldList();
+</script>
+
+  
