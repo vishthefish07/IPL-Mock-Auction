@@ -1505,11 +1505,17 @@ function createInitialAuctionMemory() {
 }
 
 const TEAM_INITIAL_PURSES = {};
+const BLOCKED_PLAYER_NAMES = new Set(["harry brook"]);
 const MAX_BID_HISTORY = 10;
 const MAX_MISSED_TARGETS = 10;
 
 function isAuctionEligiblePlayer(player) {
   if (!player) return false;
+  const cleanName = String(player.name || "")
+    .replace(/\s*\(.*?\)\s*/g, "")
+    .trim()
+    .toLowerCase();
+  if (BLOCKED_PLAYER_NAMES.has(cleanName)) return false;
   const base = Number(player.basePrice);
   return Number.isFinite(base) && base > 0;
 }
