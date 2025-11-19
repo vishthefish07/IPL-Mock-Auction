@@ -1362,6 +1362,8 @@ let soldIds = new Set();
 let unsoldIds = new Set();
 let playerStatus = new Map();
 let soldHistory = [];
+const MAX_SOLD_HISTORY = 120;
+const TRANSIENT_PLAYER_STATE = new WeakMap();
 let bluffEventHistory = [];
 let analyticsAutoShown = false;
 let currentPlayerIndex = 0;
@@ -1373,6 +1375,7 @@ let teamLandscapeVersion = 0;
 const SCARCITY_CACHE = new Map();
 const MARKET_HOTNESS_CACHE = new Map();
 let remainingOverseasCountCache = { version: -1, count: 0 };
+let lastIndianPoolWarningKey = null;
 
 function invalidatePlayerPoolCaches() {
   poolStateVersion += 1;
@@ -1408,6 +1411,22 @@ function isBidAmountAligned(value) {
   if (typeof value !== "number" || Number.isNaN(value)) return false;
   const scaled = Math.round(value * 20);
   return Math.abs(value * 20 - scaled) < 1e-6;
+}
+
+function isValidBidIncrement(newBid, fromBid, player) {
+  if (!player || typeof newBid !== "number") return false;
+  const minAllowed = getNextBidAmount(fromBid, player);
+  if (newBid < minAllowed - 1e-6) {
+    return false;
+  }
+  if (fromBid <= 0) {
+    return Math.abs(newBid - minAllowed) < 1e-6;
+  }
+  const increment = newBid - fromBid;
+  const expectedIncrement = getBidIncrementForAmount(fromBid);
+  if (expectedIncrement <= 0) return false;
+  const incrementMultiple = increment / expectedIncrement;
+  return Math.abs(incrementMultiple - Math.round(incrementMultiple)) < 1e-6;
 }
 
 function getBidIncrementForAmount(amount) {
@@ -1500,7 +1519,8 @@ function createInitialAuctionMemory() {
     consecutiveLosses: 0,
     lastLossTimestamp: null,
     fomoTriggers: [],
-    exhausted: false
+    exhausted: false,
+    rivalryHeatMeta: {}
   };
 }
 
@@ -1684,6 +1704,7 @@ let lastHumanInteraction = Date.now();
 let currentPlayerRevealAt = Date.now();
 let autoInterval = null;
 let isPaused = false;
+let pauseStartTimestamp = null;
 let autoResumeGraceUntil = 0;
 let aiTickRunning = false;
 let pauseHintTeamId = null;
@@ -1810,14 +1831,20 @@ function applyPauseState(shouldPause, initiatingTeamId = null) {
   const player = getCurrentPlayer();
   const pausingTeamId = initiatingTeamId || getActiveHumanTeamIdForPause();
   if (shouldPause) {
-    isPaused = true;
-    activePauseTeamId = pausingTeamId || null;
+    if (!isPaused) {
+      isPaused = true;
+      pauseStartTimestamp = Date.now();
+    }
+    activePauseTeamId = pausingTeamId || activePauseTeamId || null;
     if (pausingTeamId) pauseHintTeamId = pausingTeamId;
     notePauseStart(pausingTeamId, player);
     btnPause.textContent = "▶ Resume auto-sell";
   } else {
     if (!isPaused) return;
     isPaused = false;
+    const now = Date.now();
+    const pauseDuration = pauseStartTimestamp ? now - pauseStartTimestamp : 0;
+    pauseStartTimestamp = null;
     activePauseTeamId = null;
     teamsState.forEach((team) => {
       const memory = ensureAuctionMemory(team);
@@ -1827,7 +1854,18 @@ function applyPauseState(shouldPause, initiatingTeamId = null) {
         memory.humanPauseSignals.stillPaused = false;
       }
     });
-    syncAuctionTimers(AI_TUNING.timers.pauseResumeBufferMs);
+    if (pauseDuration > 0) {
+      lastBidTimestamp += pauseDuration;
+      lastHumanInteraction += pauseDuration;
+      currentPlayerRevealAt += pauseDuration;
+    }
+    const bufferMs = AI_TUNING.timers.pauseResumeBufferMs || 0;
+    if (bufferMs > 0) {
+      autoResumeGraceUntil = Math.max(
+        autoResumeGraceUntil || 0,
+        now + bufferMs
+      );
+    }
     btnPause.textContent = "⏸ Pause auto-sell";
   }
   updateTimerDisplay();
@@ -2092,8 +2130,8 @@ function markHumanActivity() {
     return arr;
   }
 
-  function buildAuctionOrder() {
-    bracketRanges = [];
+function buildAuctionOrder() {
+  bracketRanges = [];
     const byBracket = {
       marquee: [],
       batter: [],
@@ -2121,8 +2159,46 @@ function markHumanActivity() {
       bracketRanges.push({ bracket: br, start: startIndex, end: endIndex });
     });
 
-    return order;
+  return order;
+}
+
+function warnIfInsufficientIndianPool(teams, pool) {
+  if (!Array.isArray(teams) || !teams.length) return;
+  const sourcePool = Array.isArray(pool) && pool.length ? pool : PLAYERS_2026;
+
+  const availableIndians = sourcePool.filter((player) => {
+    if (!isAuctionEligiblePlayer(player)) return false;
+    if (player.isOverseas) return false;
+    if (soldIds.has(player.id)) return false;
+    const status = playerStatus.get(player.id);
+    if (status === "unsold_final") return false;
+    return true;
+  }).length;
+
+  const minIndianNeed = teams.reduce((sum, team) => {
+    const squad = team.squad || [];
+    const remainingSlots = Math.max(0, MIN_SQUAD_SIZE - squad.length);
+    if (remainingSlots === 0) return sum;
+    const additionalOverseasSlots = Math.max(
+      0,
+      Math.min(8 - (team.overseasBought || 0), remainingSlots)
+    );
+    const requiredIndianAdds = Math.max(0, remainingSlots - additionalOverseasSlots);
+    return sum + requiredIndianAdds;
+  }, 0);
+
+  const warningKey = `${availableIndians}:${minIndianNeed}`;
+  if (minIndianNeed > availableIndians) {
+    if (warningKey === lastIndianPoolWarningKey) return;
+    lastIndianPoolWarningKey = warningKey;
+    const msg = `Warning: only ${availableIndians} eligible Indian players remain in the pool, but squads may require at least ${minIndianNeed} more to reach ${MIN_SQUAD_SIZE}.`;
+    console.warn(msg);
+    alert(msg);
+    pushLog(`⚠️ ${msg}`);
+  } else {
+    lastIndianPoolWarningKey = null;
   }
+}
 
   // ----------------------------
   // RENDER HELPERS
@@ -4058,8 +4134,6 @@ const AI_TUNING = {
 let UTILITY_DEBUG_ENABLED = false;
 const MAX_UTILITY_SAMPLES = 400;
 const UTILITY_SAMPLES = [];
-let utilitySamplesSorted = [];
-let utilitySamplesDirty = false;
 const UTILITY_CACHE = new Map();
 
 function bumpTeamStateVersion(team) {
@@ -5417,6 +5491,7 @@ function evaluateBluffOpportunity(team, player, nextBid, utility) {
   if (!currentBidTeamId) return null;
   const currentLeader = getTeamById(currentBidTeamId);
   if (!currentLeader || currentLeader.id === team.id) return null;
+  if (currentLeader.isHuman) return null;
 
   const stage = getAuctionStage();
   const leaderFit = evaluatePlayerFit(currentLeader, player);
@@ -5471,7 +5546,7 @@ function evaluateBluffOpportunity(team, player, nextBid, utility) {
   if (Math.random() < 0.15) {
     cap += incrementUnit * randomInt(1, 2);
   }
-  cap = Math.min(cap, team.purse * 0.3);
+  cap = Math.min(cap, team.purse * 0.9);
   if (cap < nextBid + incrementUnit * 2) return null;
 
   return {
@@ -5497,6 +5572,15 @@ function getRemainingQualityOverseasCount() {
   return count;
 }
 
+function getRemainingIndianCount() {
+  return PLAYERS_2026.filter(
+    (p) =>
+      !p.isOverseas &&
+      !soldIds.has(p.id) &&
+      isAuctionEligiblePlayer(p)
+  ).length;
+}
+
 function getOverseasUrgency(team, player, stageContext) {
   if (!player.isOverseas) return 0;
   const preferred = Math.min(
@@ -5507,11 +5591,19 @@ function getOverseasUrgency(team, player, stageContext) {
   if (need <= 0) return 0;
 
   const remainingOS = getRemainingQualityOverseasCount();
-  const bufferMultiplier = AI_TUNING.overseas.bufferMultiplier || 3;
-  const targetPool = Math.max(need * bufferMultiplier, 1);
-  const scarcity = 1 - Math.min(1, remainingOS / targetPool);
-  if (scarcity <= 0) return 0;
-  return scarcity * AI_TUNING.overseas.aggressionBonus;
+  let totalDemand = need;
+  if (Array.isArray(teamsState) && teamsState.length > 0) {
+    totalDemand = teamsState.reduce((sum, t) => {
+      if (!t || (t.squad && t.squad.length >= MAX_SQUAD_SIZE)) return sum;
+      const teamNeed = Math.max(0, preferred - (t.overseasBought || 0));
+      return sum + teamNeed;
+    }, 0);
+  }
+  const marketScarcity =
+    remainingOS > 0 ? Math.min(1, totalDemand / remainingOS) : 1;
+  const teamUrgency = need / preferred;
+  const blended = Math.min(1, marketScarcity * 0.6 + teamUrgency * 0.4);
+  return blended * (AI_TUNING.overseas.aggressionBonus || 0.2);
 }
 
 function evaluatePlayerFit(team, player, blueprintOverride) {
@@ -5561,8 +5653,41 @@ function adjustRivalryHeat(team, rivalId, delta) {
   if (!rivalId) return;
   const memory = ensureAuctionMemory(team);
   memory.rivalryHeat = memory.rivalryHeat || {};
+  memory.rivalryHeatMeta = memory.rivalryHeatMeta || {};
   const current = memory.rivalryHeat[rivalId] || 0;
-  memory.rivalryHeat[rivalId] = Math.max(0, current + delta);
+  const updated = Math.max(0, current + delta);
+  if (updated <= 0) {
+    delete memory.rivalryHeat[rivalId];
+    delete memory.rivalryHeatMeta[rivalId];
+    return;
+  }
+  memory.rivalryHeat[rivalId] = updated;
+  memory.rivalryHeatMeta[rivalId] = { lastUpdate: Date.now() };
+}
+
+function decayRivalryHeat(memory, now) {
+  if (!memory.rivalryHeat) return;
+  const metaMap = memory.rivalryHeatMeta || (memory.rivalryHeatMeta = {});
+  Object.keys(memory.rivalryHeat).forEach((rivalId) => {
+    const meta = metaMap[rivalId] || {};
+    const lastUpdate =
+      typeof meta.lastUpdate === "number" ? meta.lastUpdate : now;
+    const minutesPassed = Math.max(0, (now - lastUpdate) / 60000);
+    if (minutesPassed <= 0) {
+      metaMap[rivalId] = { lastUpdate: now };
+      return;
+    }
+    const halfLifeMinutes = 5;
+    const decayFactor = Math.pow(0.5, minutesPassed / halfLifeMinutes);
+    const decayed = memory.rivalryHeat[rivalId] * decayFactor;
+    if (decayed < 0.01) {
+      delete memory.rivalryHeat[rivalId];
+      delete metaMap[rivalId];
+    } else {
+      memory.rivalryHeat[rivalId] = decayed;
+      metaMap[rivalId] = { lastUpdate: now };
+    }
+  });
 }
 
 function calculateFOMO(team, player) {
@@ -5759,24 +5884,35 @@ function computeScarcityScore(player) {
     return cached.value;
   }
   const bucket = getRoleBucket(player.role, "auction");
-  let similar = 0;
-  let total = 0;
+  let qualityWeightedSimilar = 0;
+  let totalBucket = 0;
+  const playerRating =
+    typeof player.rating === "number"
+      ? player.rating
+      : Math.max(0, parseFloat(player.rating) || 0);
+  const normalizedPlayerQuality = Math.max(0.1, playerRating / 10);
 
   PLAYERS_2026.forEach((p) => {
     if (soldIds.has(p.id)) return;
     if (unsoldIds.has(p.id)) return; // already gone through main round
-    const b = getRoleBucket(p.role, "auction");
-    if (b === bucket) {
-      total += 1;
-      // "similar" = close bracket & OS/Indian
-      if (p.isOverseas === player.isOverseas && Math.abs(p.rating - player.rating) <= 1.5) {
-        similar += 1;
-      }
-    }
+    if (getRoleBucket(p.role, "auction") !== bucket) return;
+    totalBucket += 1;
+    if (p.isOverseas !== player.isOverseas) return;
+    const candidateRating =
+      typeof p.rating === "number"
+        ? p.rating
+        : Math.max(0, parseFloat(p.rating) || 0);
+    const ratingGap = Math.abs(candidateRating - playerRating);
+    const similarity = Math.max(0, 1 - ratingGap / 3);
+    const qualityWeight = candidateRating / 10;
+    qualityWeightedSimilar += similarity * qualityWeight;
   });
 
-  if (total === 0) return 1; // extremely scarce
-  const scarcity = 1 - similar / Math.max(total, 1);
+  if (totalBucket === 0) return 1; // extremely scarce
+  const normalizedSimilarity =
+    qualityWeightedSimilar / Math.max(0.1, normalizedPlayerQuality);
+  const scarcity =
+    1 - Math.min(1, normalizedSimilarity / Math.max(totalBucket, 1));
   const value = Math.min(1, Math.max(0, scarcity));
   SCARCITY_CACHE.set(player.id, { version: poolStateVersion, value });
   return value;
@@ -5970,23 +6106,25 @@ function recordUtilitySample(value) {
   if (UTILITY_SAMPLES.length > MAX_UTILITY_SAMPLES) {
     UTILITY_SAMPLES.shift();
   }
-  utilitySamplesDirty = true;
 }
 
 function getUtilityPercentile(value) {
   if (UTILITY_SAMPLES.length < AI_TUNING.desire.minSamples) return null;
-  if (utilitySamplesDirty) {
-    utilitySamplesSorted = [...UTILITY_SAMPLES].sort((a, b) => a - b);
-    utilitySamplesDirty = false;
+  const len = UTILITY_SAMPLES.length;
+  const weighted = UTILITY_SAMPLES.map((sample, idx) => {
+    const recency = idx / len;
+    const weight = 1 + recency;
+    return { value: sample, weight };
+  }).sort((a, b) => a.value - b.value);
+  const totalWeight = weighted.reduce((sum, entry) => sum + entry.weight, 0);
+  let cumulative = 0;
+  for (const entry of weighted) {
+    cumulative += entry.weight;
+    if (entry.value >= value) {
+      return cumulative / totalWeight;
+    }
   }
-  let lo = 0;
-  let hi = utilitySamplesSorted.length;
-  while (lo < hi) {
-    const mid = Math.floor((lo + hi) / 2);
-    if (utilitySamplesSorted[mid] <= value) lo = mid + 1;
-    else hi = mid;
-  }
-  return lo / utilitySamplesSorted.length;
+  return 1;
 }
 
 function recordUtilityDebug(team, player, contributions, multipliers, total, fitInfo) {
@@ -6077,11 +6215,18 @@ function computePlayerUtility(team, player, fitInfoOverride) {
     player &&
     player.id != null;
   const teamVersion = team?.stateVersion || 0;
+  const poolVersion = poolStateVersion;
+  const landscapeVersion = teamLandscapeVersion;
   let cacheKey = null;
   if (canCache) {
-    cacheKey = `${team.id}:${player.id}`;
+    cacheKey = `${team.id}:${player.id}:${poolVersion}:${teamVersion}:${landscapeVersion}`;
     const cached = UTILITY_CACHE.get(cacheKey);
-    if (cached && cached.teamVersion === teamVersion) {
+    if (
+      cached &&
+      cached.teamVersion === teamVersion &&
+      cached.poolVersion === poolVersion &&
+      cached.landscapeVersion === landscapeVersion
+    ) {
       recordUtilitySample(cached.value);
       return cached.value;
     }
@@ -6114,7 +6259,9 @@ function computePlayerUtility(team, player, fitInfoOverride) {
   if (canCache && cacheKey) {
     UTILITY_CACHE.set(cacheKey, {
       value: totalUtility,
-      teamVersion
+      teamVersion,
+      poolVersion,
+      landscapeVersion
     });
   }
 
@@ -6581,23 +6728,31 @@ function aiTick() {
   aiTickRunning = true;
   
   try {
+    const now = Date.now();
     // Decay rivalry heat and bluff stats for all teams
     teamsState.forEach((team) => {
       const memory = ensureAuctionMemory(team);
-      if (memory.rivalryHeat) {
-        Object.keys(memory.rivalryHeat).forEach((rivalId) => {
-          memory.rivalryHeat[rivalId] = Math.max(
-            0,
-            memory.rivalryHeat[rivalId] - 0.02
-          );
-        });
-      }
+      decayRivalryHeat(memory, now);
       if (!team.isHuman) decayBluffStats(team);
     });
 
     const player = getCurrentPlayer();
     if (!player) return;
     if (!teamsState || teamsState.length === 0) return;
+
+    const tickSnapshot = {
+      playerId: player.id,
+      bid: currentBid,
+      leaderId: currentBidTeamId
+    };
+    const stateChangedSinceSnapshot = () => {
+      const livePlayerId = getCurrentPlayer()?.id;
+      return (
+        livePlayerId !== tickSnapshot.playerId ||
+        currentBid !== tickSnapshot.bid ||
+        currentBidTeamId !== tickSnapshot.leaderId
+      );
+    };
 
     // small chance that no one acts this tick, to keep it human-ish
     if (Math.random() < 0.25) return;
@@ -6612,6 +6767,13 @@ function aiTick() {
     });
 
     if (eligibleAI.length === 0) return;
+
+    if (stateChangedSinceSnapshot()) {
+      console.warn(
+        `[RACE] Auction state changed before AI evaluation for ${player.name}. Skipping tick.`
+      );
+      return;
+    }
 
     const nextBid = getNextBidAmount(currentBid, player);
 
@@ -6642,6 +6804,12 @@ function aiTick() {
     const previousLeaderId = currentBidTeamId;
     
     if (!scheduleBid(team, player, decision, nextBid)) return;
+    if (stateChangedSinceSnapshot()) {
+      console.warn(
+        `[RACE] Bid changed during aiTick for ${player.name}. Aborting ${team.name} bid.`
+      );
+      return;
+    }
     
     const teamMemory = ensureAuctionMemory(team);
     teamMemory.currentWar = teamMemory.currentWar || {};
@@ -6732,7 +6900,7 @@ function checkAutoTimeouts() {
   }
 }
 
-  function startAuto() {
+function startAuto() {
   if (autoInterval) clearInterval(autoInterval);
 
   autoInterval = setInterval(() => {
@@ -6775,12 +6943,26 @@ function stopAuto() {
       );
       return false;
     }
-    if (player.isOverseas && team.overseasBought >= 8) {
-      showAlert(
-        `${team.name} has already bought 8 overseas players. Cannot buy more overseas.`,
-        { isOverseas: true }
+    if (player.isOverseas) {
+      const slotsNeeded = Math.max(
+        0,
+        MIN_SQUAD_SIZE - (team.squad.length + 1)
       );
-      return false;
+      const remainingIndians = getRemainingIndianCount();
+      if (slotsNeeded > 0 && remainingIndians < slotsNeeded) {
+        showAlert(
+          `⚠️ ${team.name} must keep spots for Indian players to reach the minimum squad size.`,
+          { isOverseas: true }
+        );
+        return false;
+      }
+      if (team.overseasBought >= 8) {
+        showAlert(
+          `${team.name} has already bought 8 overseas players. Cannot buy more overseas.`,
+          { isOverseas: true }
+        );
+        return false;
+      }
     }
     if (amount > team.purse) {
       showAlert(
@@ -6832,6 +7014,11 @@ function stopAuto() {
     return;
   }
 
+  if (!isValidBidIncrement(newBid, currentBid, player)) {
+    alert("Bid must follow the official increment steps from the current price.");
+    return;
+  }
+
   if (
     !canTeamBidOn(team, player, newBid, {
       suppressOverseasAlert: true
@@ -6871,6 +7058,14 @@ function advanceToNextPlayer() {
       return;
     }
     const outgoingPlayer = getCurrentPlayer();
+    if (outgoingPlayer && Array.isArray(teamsState)) {
+      teamsState.forEach((team) => {
+        const memory = ensureAuctionMemory(team);
+        if (memory.lastIntent && memory.lastIntent.playerId === outgoingPlayer.id) {
+          memory.lastIntent = null;
+        }
+      });
+    }
     if (outgoingPlayer) {
       clearWarTrackingForPlayer(outgoingPlayer.id);
     }
@@ -7008,6 +7203,7 @@ function markUnsoldAndAdvance(player, message) {
   // 🔥 NEW: sync all player lists + external window
   renderSectionList();
   renderPlayerPoolList();
+  warnIfInsufficientIndianPool(teamsState, PLAYERS_2026);
   // (both call refreshPlayersWindow internally)
 
   advanceToNextPlayer();
@@ -7077,7 +7273,14 @@ function markUnsoldAndAdvance(player, message) {
     price: currentBid,
     timestamp: Date.now()
   });
-  if (soldHistory.length > 200) soldHistory.length = 200;
+  if (soldHistory.length > MAX_SOLD_HISTORY) {
+    soldHistory.length = MAX_SOLD_HISTORY;
+  }
+  TRANSIENT_PLAYER_STATE.set(player, {
+    lastSoldPrice: currentBid,
+    lastSoldTeamId: team.id,
+    soldAt: Date.now()
+  });
   renderSoldList();
   logLines = [];
   renderLog();
@@ -7085,6 +7288,7 @@ function markUnsoldAndAdvance(player, message) {
   // 🔥 NEW: keep all player views in sync
   renderSectionList();      // updates "By Section" view + calls refreshPlayersWindow()
   renderPlayerPoolList();   // updates the filters view + also calls refreshPlayersWindow()
+  warnIfInsufficientIndianPool(teamsState, PLAYERS_2026);
 
   if (manual) markHumanActivity();
   if (finalizeAuctionBecauseFullSquads()) {
@@ -7167,7 +7371,12 @@ function applyMarketForces(basePrice, team, player) {
   if (inflation && inflation.count >= 3) {
     const avgRatio = inflation.totalPaid / Math.max(0.01, inflation.totalBase);
     if (avgRatio > 1.5) {
-      const inflationMult = Math.min(1.5, 1 + (avgRatio - 1.5) * 0.35);
+      const inflationWeight = Math.min(1, inflation.count / 10);
+      const rawInflationMult = 1 + (avgRatio - 1.5) * 0.35;
+      const inflationMult = Math.min(
+        1.5,
+        1 + (rawInflationMult - 1) * inflationWeight
+      );
       price *= inflationMult;
     }
   }
@@ -7193,8 +7402,8 @@ function applyPurseConstraints(basePrice, team, player, fitInfo) {
   price = Math.min(price, Math.max(team.purse - safetyPurse, player.basePrice));
 
   if (memory.panicMode && fitInfo.tier === "core") {
-    const desperationCeiling = Math.min(team.purse * 0.7, player.basePrice * 6);
-    price = Math.max(price, desperationCeiling);
+    const panicBoost = Math.min(player.basePrice * 2, team.purse * 0.3);
+    price = Math.min(team.purse * 0.7, price + panicBoost);
   }
 
   const sanityCap = player.basePrice * (player.rating >= 9 ? 10 : 8);
@@ -7389,6 +7598,7 @@ function getMaxPursePercent(team, stage, fitInfo, memory) {
     teamsState = selectedTeams;
     renderSoldList();
     logLines = [];
+    warnIfInsufficientIndianPool(teamsState, PLAYERS_2026);
     if (analyticsModalEl) {
       analyticsModalEl.classList.add("hidden");
     }
